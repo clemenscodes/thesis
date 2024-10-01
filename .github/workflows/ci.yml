@@ -11,8 +11,8 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     permissions:
-      id-token: "write"
-      contents: "write"
+      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
@@ -24,10 +24,12 @@ jobs:
           echo "pdf_path=$(readlink -f result/Thesis.pdf)" >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
         with:
           name: Thesis
+          tag_name: latest
+          files: ${{ env.pdf_path }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: false
           make_latest: true
-          files: ${{ env.pdf_path }}
-          token: ${{ secrets.GITHUB_TOKEN }}
