@@ -1,4 +1,4 @@
-\section{Overview of Containerization Technologies}
+\section{Containerization Technologies}
 
 This section introduces the fundamental concepts, principles, and architectural
 components of containerization. Containerization technologies have revolutionized
@@ -7,7 +7,7 @@ and their dependencies into isolated containers, these technologies ensure that
 software runs consistently across various environments \cite[Under the Hood]
 {merkelDockerLightweightLinux2014}.
 
-\subsection{Definition and Scope of Containerization}
+\subsection{Definition and Scope}
 
 Containerization is a lightweight form of virtualization \cite[Containers vs. Other
 	Types of Virtualization]{merkelDockerLightweightLinux2014} that packages an
@@ -37,7 +37,32 @@ Containerization has become an essential technology in modern software developme
 \cite[Docker: a Little Background]{merkelDockerLightweightLinux2014}, enabling the
 development and deployment of applications in a consistent, repeatable manner.
 
-\subsection{Theoretical Concepts of Containerization}
+\subsection{Containerization Systems}
+
+Several containerization systems exemplify the principles and benefits of this
+technology, providing robust tools for developing, shipping, and running applications
+in a consistent and isolated manner.
+
+Docker \cite{DockerHomepage2022} is one of the most widely used container platforms.
+It offers a comprehensive suite of tools for building, sharing, and running containers.
+Docker simplifies the process of creating container images with Dockerfiles and
+provides a powerful runtime for managing containers \cite{DockerfileReference0200}.
+Its popularity has led to a vast ecosystem of pre-built images available on Docker
+Hub, making it easy to find and use a wide variety of software \cite{DockerHubContainer}.
+
+Another notable example is Podman \cite{Podman2024}, a daemonless container engine
+developed by Red Hat \cite{RedHatWe}. Podman provides a similar user experience to
+Docker but does not require a background daemon, enhancing security and flexibility.
+It supports rootless containers, allowing users to run containers without elevated
+privileges, which improves security by reducing the attack surface \cite[4.1]
+{priedhorskyMinimizingPrivilegeBuilding2021}.
+
+These examples illustrate the diverse range of containerization systems available,
+each with its unique features and strengths. Whether it's Docker's ease of use or
+Podman's security features, these systems demonstrate the versatility and effectiveness
+of containerization in modern software development and deployment.
+
+\subsection{Theoretical Concepts}
 
 Containerization technologies, such as Docker and Podman, have revolutionized
 the software deployment landscape by offering lightweight, efficient methods
@@ -82,31 +107,6 @@ cloud-native applications and microservices architectures. Their ability
 to provide lightweight, isolated environments with minimal overhead makes
 them ideal for continuous integration and continuous delivery (CI/CD)
 pipelines and other dynamic infrastructures \cite{Cgroups2024}.
-
-\subsection{Examples of Containerization Systems}
-
-Several containerization systems exemplify the principles and benefits of this
-technology, providing robust tools for developing, shipping, and running applications
-in a consistent and isolated manner.
-
-Docker \cite{DockerHomepage2022} is one of the most widely used container platforms.
-It offers a comprehensive suite of tools for building, sharing, and running containers.
-Docker simplifies the process of creating container images with Dockerfiles and
-provides a powerful runtime for managing containers \cite{DockerfileReference0200}.
-Its popularity has led to a vast ecosystem of pre-built images available on Docker
-Hub, making it easy to find and use a wide variety of software \cite{DockerHubContainer}.
-
-Another notable example is Podman \cite{Podman2024}, a daemonless container engine
-developed by Red Hat \cite{RedHatWe}. Podman provides a similar user experience to
-Docker but does not require a background daemon, enhancing security and flexibility.
-It supports rootless containers, allowing users to run containers without elevated
-privileges, which improves security by reducing the attack surface \cite[4.1]
-{priedhorskyMinimizingPrivilegeBuilding2021}.
-
-These examples illustrate the diverse range of containerization systems available,
-each with its unique features and strengths. Whether it's Docker's ease of use or
-Podman's security features, these systems demonstrate the versatility and effectiveness
-of containerization in modern software development and deployment.
 
 \subsection{Architecture and Key Concepts}
 
@@ -170,3 +170,4 @@ provided by namespaces and cgroups ensures that applications can run securely wi
 interfering with each other, while the immutability and layering of container images
 enhance portability and efficiency. Together, these technologies have made
 containerization a cornerstone of modern software development and deployment.
+
