@@ -70,104 +70,96 @@ for isolating applications and their dependencies. The core theoretical
 concepts underlying containerization are rooted in OS-level isolation and
 resource control mechanisms that provide environments capable of running
 applications consistently across various infrastructure environments.
-A central concept in containerization is process isolation, which is
-achieved through the use of namespaces. Namespaces ensure that
-applications running within a container are isolated from processes on the
-host or in other containers. By providing isolated views of the system,
-namespaces prevent containers from interfering with each other or accessing
-resources not explicitly shared \cite{Cgroups2024}. This isolation allows
-containers to simulate separate operating systems while still sharing the
-host's kernel.
-Another critical concept is resource control, which is primarily
-implemented through control groups (cgroups). Cgroups allow
-the system to limit, prioritize, and isolate resource usage (e.g., CPU, memory,
-and network bandwidth) for processes within a container. This ensures that
-containers do not exceed their allocated resources, thus maintaining system
-stability even when multiple containers run concurrently
-\cite[Under the Hood]{merkelDockerLightweightLinux2014}.
-Containers also rely on image layering, a technique that allows
-reusable and immutable layers of a container image to be shared across
-different containers. This reduces redundancy and improves efficiency, as
-containers only need to store and transfer the unique layers for each
+A central concept in containerization is process isolation, which is achieved
+through the use of namespaces. Namespaces ensure that applications running
+within a container are isolated from processes on the host or in other
+containers. By providing isolated views of the system, namespaces prevent
+containers from interfering with each other or accessing resources not
+explicitly shared \cite{Cgroups2024}. This isolation allows containers to
+simulate separate operating systems while still sharing the host's kernel.
+
+Another critical concept is resource control, which is primarily implemented
+through control groups (cgroups). Cgroups allow the system to limit,
+prioritize, and isolate resource usage (e.g., CPU, memory, and network
+bandwidth) for processes within a container. This ensures that containers do
+not exceed their allocated resources, thus maintaining system stability even
+when multiple containers run concurrently \cite[Under the Hood]{merkelDockerLightweightLinux2014}.
+Containers also rely on image layering, a technique
+that allows reusable and immutable layers of a container image to be shared
+across different containers. This reduces redundancy and improves efficiency,
+as containers only need to store and transfer the unique layers for each
 application \cite[Chapter 2.4]{merkelDockerLightweightLinux2014}. Layers
 improve the overall speed of container deployment and resource usage,
 enabling faster initialization and scaling in dynamic environments.
-While containers offer significant benefits in terms of isolation and resource
-control, the concept of reproducibility remains a challenge. Unlike
-functional package management systems, containers rely on external base images
-(e.g., Ubuntu or Alpine), which can evolve over time, making it difficult to
-guarantee that a container built today will be identical in the future unless
-explicitly managed through version pinning or using image digests
-\cite{InotifySharedDrives}. Addressing this issue requires additional
-effort in Docker-based deployments, where base images and package versions
-must be manually pinned.
-Containerization technologies are particularly effective in environments
-where efficiency and scalability are crucial, such as
-cloud-native applications and microservices architectures. Their ability
-to provide lightweight, isolated environments with minimal overhead makes
-them ideal for continuous integration and continuous delivery (CI/CD)
-pipelines and other dynamic infrastructures \cite{Cgroups2024}.
 
-\subsection{Architecture and Key Concepts}
-
-Containerization systems are built on several key architectural components and
-principles that work together to provide isolated, portable, and efficient environments
-for applications. Understanding these components and their underlying mechanisms
-highlights how containerization achieves its goals.
-
-At the core of containerization is the concept of container images \cite{SystemImage2024}.
-A container image is a lightweight, self-contained software package that includes
-everything needed to run an application: code, runtime, libraries, and environment
-settings. These images are built from declarative scripts, such as Dockerfiles, and
-use Docker's layering system to improve efficiency \cite{UnderstandingImageLayers0200}.
-Each instruction in the Dockerfile creates a new layer, and Docker employs caching
-mechanisms to reuse unchanged layers during builds, significantly reducing image
-build times \cite{Cache0200}.
+At the core of containerization is the concept of container images
+\cite{SystemImage2024}. A container image is a lightweight, self-contained
+software package that includes everything needed to run an application: code,
+runtime, libraries, and environment settings. These images are built from
+declarative scripts, such as Dockerfiles, and use Docker's layering system to
+improve efficiency \cite{UnderstandingImageLayers0200}. Each instruction in
+the Dockerfile creates a new layer, and Docker employs caching mechanisms to
+reuse unchanged layers during builds, significantly reducing image build
+times \cite{Cache0200}.
 
 Once built, these images are immutable, ensuring consistent and reproducible
-environments across various systems. When executed, images are instantiated as
-containers by a container runtime \cite{ContainerRuntimes}. The runtime is responsible
-for managing the container lifecycle—creation, execution, and termination. Common
-container runtimes include the Docker Engine \cite{DockerEngine0200}, containerd
-\cite{Containerd}, and CRI-O \cite{Crio2024}. These runtimes leverage key features
-of the underlying operating system, particularly namespaces and control groups
-(cgroups), to provide isolation and resource control.
+environments across various systems. When executed, images are instantiated
+as containers by a container runtime \cite{ContainerRuntimes}. The runtime is
+responsible for managing the container lifecycle—creation, execution, and
+termination. Common container runtimes include the Docker Engine
+\cite{DockerEngine0200}, containerd \cite{Containerd}, and CRI-O
+\cite{Crio2024}. These runtimes leverage key features of the underlying
+operating system, particularly namespaces and control groups (cgroups), to
+provide isolation and resource control.
 
-Namespaces are a Linux kernel feature that isolates different resources at the kernel
-level. By using different types of namespaces, such as process ID (PID) \cite
-{ProcessIdentifier2024}, network, and file system namespaces, containers have their
-own isolated views of these system resources. For example, the PID namespace ensures
-that each container has its own process tree, separate from others, while the network
-namespace gives each container its own network stack \cite{LinuxNamespaces2024}.
-Cgroups are another fundamental Linux kernel feature that ensures efficient resource
-allocation for containers. Cgroups limit the amount of CPU \cite{CentralProcessingUnit2024},
-memory, disk I/O \cite{InputOutput2024}, and other resources a container can use,
-preventing any container from monopolizing system resources. This fine-grained control
-helps maintain system stability and balance performance across containers
+Namespaces are a Linux kernel feature that isolates different resources at
+the kernel level. By using different types of namespaces, such as process ID
+(PID) \cite{ProcessIdentifier2024}, network, and file system namespaces,
+containers have their own isolated views of these system resources. For
+example, the PID namespace ensures that each container has its own process
+tree, separate from others, while the network namespace gives each container
+its own network stack \cite{LinuxNamespaces2024}. Cgroups are another
+fundamental Linux kernel feature that ensures efficient resource allocation
+for containers. Cgroups limit the amount of CPU \cite{CentralProcessingUnit2024},
+memory, disk I/O \cite{InputOutput2024}, and other resources a
+container can use, preventing any container from monopolizing system
+resources. This fine-grained control helps maintain system stability and
+balance performance across containers \cite{Cgroups2024}.
+
+Containers must also interact with external systems and other containers
+within the same host or distributed systems. Containerization technologies
+provide several networking models, such as bridge networks for
+inter-container communication on the same host, and overlay networks for
+distributed applications across multiple hosts. Host networking allows
+containers to share the host’s network stack directly \cite{Networking0200}.
+In addition, containers often require persistent storage, despite their
+ephemeral nature. To address this, technologies such as volume mounts, as
+well as networked or cloud-based storage solutions, ensure that data remains
+intact and available across container restarts and migrations
+\cite{PersistingContainerData0200}.
+
+Linux Containers (LXC) represent an earlier container technology that also
+relies on namespaces and cgroups. Linux containers run a full Linux
+distribution within the container but require more manual configuration than
+Docker containers. Docker containers, by contrast, emphasize ease of use and
+portability by packaging applications and their dependencies in a
+standardized image format, simplifying deployment across different
+environments \cite{LinuxContainers}. While containers offer significant
+benefits in terms of isolation and resource control, the concept of
+reproducibility remains a challenge. Unlike functional package management
+systems, containers rely on external base images (e.g., Ubuntu or Alpine),
+which can evolve over time, making it difficult to guarantee that a container
+built today will be identical in the future unless explicitly managed through
+version pinning or using image digests \cite{InotifySharedDrives}. Addressing
+this issue requires additional effort in Docker-based deployments, where base
+images and package versions must be manually pinned.
+
+By combining these architectural elements—container images, runtimes,
+namespaces, cgroups, networking, and storage—containerization systems create
+a robust platform for running applications in an isolated, portable, and
+efficient manner. The isolation provided by namespaces and cgroups ensures
+that applications can run securely without interfering with each other, while
+the immutability and layering of container images enhance portability and
+efficiency. Together, these technologies have made containerization a
+cornerstone of modern software development and deployment
 \cite{Cgroups2024}.
-Linux Containers (LXC) represent an earlier container technology that also relies on
-namespaces and cgroups. Linux containers run a full Linux distribution within the
-container but require more manual configuration than Docker containers. Docker
-containers, by contrast, emphasize ease of use and portability by packaging
-applications and their dependencies in a standardized image format, simplifying
-deployment across different environments \cite{LinuxContainers}.
-Another critical component is container networking. Containers must communicate with
-each other and with external systems. Containerization technologies provide several
-networking models, such as bridge networks for inter-container communication on the
-same host, and overlay networks for distributed applications across multiple hosts.
-Host networking allows containers to share the host’s network stack directly
-\cite{Networking0200}.
-Storage is also vital in containerization. While containers are designed to be ephemeral,
-many applications require persistent data. Containerization technologies offer solutions
-such as volume mounts for persistent data storage, as well as networked or cloud-based
-storage systems to ensure data integrity and persistence across container restarts and
-migrations \cite{PersistingContainerData0200}.
-
-By combining these architectural elements—container images, runtimes, namespaces,
-cgroups, networking, and storage—containerization systems create a robust platform for
-running applications in an isolated, portable, and efficient manner. The isolation
-provided by namespaces and cgroups ensures that applications can run securely without
-interfering with each other, while the immutability and layering of container images
-enhance portability and efficiency. Together, these technologies have made
-containerization a cornerstone of modern software development and deployment.
-

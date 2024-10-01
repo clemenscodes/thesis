@@ -26,7 +26,7 @@ versions, allowing for precise recreation of environments
 involves describing the desired state of the system, with the package manager handling
 the necessary adjustments to achieve that state \cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
 
-A core aspect of functional package management is \textit{dependency closure}, which
+A core aspect of functional package management is dependency closure, which
 ensures that all dependencies required for a package are completely defined and isolated
 from the global system. This prevents dependency conflicts and ensures that different
 versions of a package can coexist \cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}.
@@ -35,7 +35,7 @@ hashing all inputs, including dependencies and system configurations, used in th
 process. This ensures that package builds remain identical over time
 \cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
 
-An important concept in functional package management is \textit{dependency closure},
+An important concept in functional package management is dependency closure,
 which ensures that different versions of dependencies can coexist without conflicts.
 This technique prevents dependency hell and ensures that packages are built in isolation,
 so different applications or parts of the system can operate independently
@@ -44,7 +44,7 @@ include their full set of dependencies, Nix guarantees that the build process ca
 reproduce identical results across different systems and times
 \cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
 
-Functional package management excels in scenarios where \textit{long-term stability}
+Functional package management excels in scenarios where long-term stability
 is crucial. Industries like scientific computing or regulated environments benefit
 from its guarantee that any system or environment configuration can be rebuilt,
 even years later, without deviation from the original setup
