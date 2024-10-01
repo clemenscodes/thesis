@@ -1,159 +1,140 @@
 \chapter{Conclusion}
-This chapter provides a comprehensive reflection on the findings of this thesis, which
-explored the comparative use of functional package management and containerization
-technologies in development environments and software deployment. By systematically
-analyzing and evaluating the performance of Nix and Docker, this thesis has identified
-key strengths and limitations of each technology, offering practical recommendations for
-their usage in modern software development workflows. Additionally, the chapter presents
-suggestions for future work and discusses the broader implications of these findings
-for both practice and research.
+This chapter provides a reflection on the findings of this thesis, which explored the 
+comparative use of functional package management and containerization technologies in 
+development environments and software deployment. Through systematic analysis and evaluation, 
+the thesis has identified key strengths and limitations of each system, offering practical 
+insights into their application in modern software development workflows. Additionally, 
+this chapter presents suggestions for future research and discusses the broader implications 
+of these findings for both practice and research.
 
 \section{Summary of Findings}
-The primary research question of this thesis aimed to compare Nix and Docker as tools
-for managing development environments and software deployment. Through detailed
-analysis and empirical evaluation, it became evident that both tools excel in different
-areas and cater to distinct use cases.
+This research focused on comparing functional package management and containerization as 
+methods for managing development environments and software deployment. Both technologies 
+show distinct strengths: functional package management excels in reproducibility and 
+environment consistency, while containerization is more suited to scenarios requiring 
+dynamic scaling and service orchestration.
 
-In development environments, Nix provides a highly effective solution for setting up
-and maintaining development environments, offering reproducibility and dependency
-management that is unmatched by Docker. By using \texttt{nix-shell}, developers can
-instantly create isolated development environments without the need for containers or
-virtual machines. This reduces the overhead associated with container-based environments,
-especially on non-Linux systems where Docker requires a virtual machine to emulate
-Linux. Nix also benefits from binary caches, allowing developers to pull pre-built
-packages and environments from shared caches, significantly speeding up setup times.
-This makes Nix ideal for both individual developers and teams, as the time saved by
-eliminating lengthy build processes leads to greater productivity.
+In development environments, functional package management provides a significant advantage 
+by allowing precise control over dependencies and ensuring reproducibility. By utilizing 
+declarative configuration models, developers can define their environments with exact 
+dependency versions, ensuring consistency across team members and eliminating common issues 
+related to dependency conflicts or machine discrepancies. This capability simplifies the 
+onboarding process for new developers, providing a seamless integration with the host system, 
+especially on non-Linux platforms, where containers would require additional virtualization.
 
-The findings suggest that Nix should be recommended for any development environment,
-regardless of scale. For smaller teams or startups, the ability to provide quick, consistent,
-and reproducible environments is particularly beneficial, reducing the friction typically
-associated with onboarding new developers or working across different machines. The
-cost-efficiency and ease of use further make Nix an attractive option for companies that
-do not require the overhead of managing containers for development.
+One key feature of functional package management is its use of binary caches, which allow 
+developers to quickly retrieve pre-built binaries for dependencies. This reduces environment 
+setup times considerably, especially in projects with large codebases and complex dependencies. 
+Thus, functional package management is ideal for development workflows that prioritize 
+efficiency and consistency, whether for individual developers or distributed teams working 
+across diverse platforms.
 
-In the context of software deployment, the choice between Nix and Docker depends largely
-on the scale and traffic demands of the application. Nix is well-suited for smaller-scale,
-self-hosted solutions where traffic is relatively stable and does not fluctuate significantly.
-For startups or small companies that may not expect major traffic spikes, deploying
-applications on rented virtual private servers using Nix can be a highly cost-effective
-solution. The ability to manage the entire environment declaratively with Nix, combined
-with its package isolation, ensures a stable and reproducible deployment process. However,
-Nix's requirement for a fully functioning server with the Nix package manager can introduce
-complexity for larger-scale applications that require more flexibility and scalability.
+In deployment scenarios, functional package management also demonstrates its effectiveness 
+by enabling developers to bundle software binaries with their exact runtime dependencies. 
+This ensures that applications run consistently across different systems, making it especially 
+useful for self-hosted servers and personal desktops. By managing package versions precisely, 
+functional package management reduces the risk of deployment errors due to incompatible 
+runtime environments. Unlike containerization, which adds the overhead of virtualized 
+environments, functional package management interacts directly with the host system, offering 
+a lightweight solution for environments with stable traffic and minimal scalability needs.
 
-For high-traffic applications and large-scale companies, Docker's containerization
-capabilities offer clear advantages. Docker excels in dynamic, scalable environments,
-where applications must be able to handle fluctuating traffic demands. Docker's
-integration with orchestration platforms like Kubernetes allows for automated scaling,
-making it the preferred choice for microservices architectures and serverless deployments.
-Docker containers are lightweight, portable, and can be easily managed across different
-infrastructure platforms, giving organizations the ability to scale services up or down
-with minimal effort.
+By contrast, containerization shines in scenarios that require scalable, complex deployments, 
+particularly for applications composed of multiple interdependent services. Containerization 
+isolates each service in its own container, allowing them to run independently of the host 
+system and other services. This isolation is particularly valuable when services have conflicting 
+dependencies or different runtime environments. The ability to package each service separately 
+makes containerization ideal for managing complex, service-oriented architectures.
 
-Despite Docker's superiority in handling large-scale deployments, the use of Nix for
-development in such environments should not be overlooked. Even in large-scale
-organizations, utilizing Nix for development environments can provide substantial
-benefits. Nix's ability to maintain reproducible development environments, combined
-with its efficient caching mechanisms, ensures that developers spend less time setting
-up environments and more time coding. By caching developer shells and reusing
-dependencies, Nix significantly reduces friction in the development process, particularly
-when iterating on complex codebases. Therefore, even for large-scale projects that use
-Docker for deployment, Nix remains a highly valuable tool for development, offering
-time-saving benefits that improve overall productivity.
+Moreover, containerization integrates well with orchestration platforms such as Kubernetes, 
+which automate the scaling and management of containers. These platforms dynamically monitor 
+resource usage and traffic, adjusting the number of running containers to meet real-time 
+application demands. This dynamic scalability makes containerization indispensable in 
+environments with unpredictable traffic or applications that require frequent scaling. 
+In summary, functional package management is best suited for maintaining reproducibility 
+and control over both development and deployment environments, while containerization excels 
+in handling large-scale, complex deployments that require dynamic service orchestration.
 
 \section{Recommendations}
-Based on the findings of this research, several practical recommendations can be made
-for developers and organizations when selecting between Docker and Nix for different
-use cases. For small companies and startups, particularly those that are self-hosting
-or working with rented virtual private servers (VPS), adopting Nix for both development
-and deployment is highly recommended. Nix provides a lightweight and reproducible
-approach to managing environments, reducing the operational overhead often associated
-with containerization technologies. Since Nix declaratively manages package dependencies
-and builds reproducible environments, it is particularly suitable for teams that do not
-need dynamic scaling but still require consistency across development and production
-environments. This approach works well for environments where traffic is stable, and
-scaling requirements are minimal. Nix allows smaller organizations to focus on efficient
-use of resources and maintain a streamlined development process without dealing with the
-complexity of container orchestration or dynamic scaling.
+Based on these findings, several recommendations can be made for organizations deciding 
+between functional package management and containerization technologies.
 
-For companies working in environments with more dynamic traffic or high scalability
-requirements, Docker remains the most practical option for handling deployments. Docker’s
-containerization technology, especially when paired with orchestration tools like
-Kubernetes, allows applications to scale seamlessly based on demand. Containers
-are lightweight, portable, and can be spun up and shut down quickly, providing
-resource efficiency and reducing downtime in high-traffic applications. The flexibility
-Docker offers in terms of scaling services independently is crucial for organizations
-that operate at larger scales or employ microservice architectures. The ability to
-efficiently manage application scaling through tools like Kubernetes is particularly
-important for large-scale companies that need to dynamically allocate resources to
-different services as traffic changes.
+For development environments, functional package management is highly recommended over 
+containerization. Its ability to provide fast, efficient, and reproducible environments 
+makes it an excellent choice for development workflows. By leveraging declarative 
+configurations and binary caches, teams can ensure consistent environments across developers, 
+avoiding the dependency conflicts and setup challenges often encountered with containerized 
+development environments. Containerization, while useful in deployment, adds unnecessary 
+overhead for development, particularly where quick iterations, minimal resource usage, 
+and tight integration with host systems are critical. Open-source projects would also benefit 
+from adopting functional development environments, as contributors can easily set up 
+consistent environments without extensive configuration.
 
-Despite Docker’s advantages in production deployment for larger applications, Nix
-remains a powerful tool for managing development environments, even in large
-organizations. By leveraging Nix to manage development environments, teams can
-benefit from fast, reproducible setups that eliminate the friction often associated
-with configuring environments manually or dealing with dependency conflicts. Nix’s
-ability to cache environments and reuse previously built dependencies means that
-developers spend less time setting up environments and more time coding. This is
-particularly valuable in larger teams where consistent environments are required
-across many developers. The combination of Nix for development and Docker for deployment
-provides a hybrid solution where Nix guarantees reproducibility during development
-while Docker offers scalability and flexibility in production.
+For deployment, the choice between functional package management and containerization 
+depends largely on the specific requirements of the application. Startups and small 
+organizations should carefully evaluate whether containerization is necessary. In many 
+cases, applications can be managed efficiently on self-hosted servers using functional 
+package management without the added complexity of containers. This approach is ideal 
+for stable, low-traffic environments where scalability is not a primary concern. However, 
+if the application is expected to experience rapid growth or fluctuating traffic, containerized 
+deployments may be more suitable, as they offer dynamic scaling to meet resource demands.
+
+Containerized deployments should only be adopted when the application architecture justifies 
+it—such as in cases involving complex microservices, rapid traffic changes, or where shutting 
+down containers during off-peak hours saves resources. When integrated with orchestration 
+platforms like Kubernetes, containerization provides the flexibility needed to manage such 
+scenarios effectively. However, it should not be the default choice for deployments unless 
+scalability requirements outweigh the simplicity and resource efficiency of functional 
+package management.
 
 \section{Future Work}
-The research conducted in this thesis opens up several avenues for further investigation
-and development. One promising area of future research could focus on optimizing the
-integration between Nix and container-based deployment models. While Docker is highly
-effective at handling process isolation and scalability, Nix’s functional package
-management could be combined with containerization to create hybrid solutions that
-leverage the strengths of both tools. For instance, a future direction might explore
-how Nix environments can be deployed within containers to ensure both reproducibility
-and scalability. This would allow organizations to benefit from the rapid environment
-setup Nix offers, while also taking advantage of Docker’s scalability for production
-deployments.
+This thesis has identified several promising areas for future research, particularly in 
+integrating the strengths of functional package management and containerization. One potential 
+direction is the development of hybrid models that combine the reproducibility of functional 
+package management with the scalability of containerized environments. Hybrid solutions could 
+allow developers to define reproducible environments using functional package management, 
+while leveraging container orchestration for dynamic scaling and service management. Research 
+into how functional environments can be encapsulated within containers could help bridge the 
+gap between these two approaches, enabling precise dependency control with the flexibility 
+of container orchestration platforms.
 
-Another area worth exploring is improving the scalability of Nix in high-traffic
-environments. Currently, while Nix excels at package management and reproducibility,
-it lacks the dynamic scaling capabilities offered by Docker and Kubernetes. Further
-research could investigate how Nix deployments might be adapted to scale more effectively,
-potentially through the use of orchestration tools specifically tailored to Nix’s package
-management model. Additionally, developing tools or extensions that make Nix more suitable
-for dynamic traffic environments could make it a viable option for larger-scale
-deployments that require the flexibility to adjust resource usage in real-time.
+Further research could explore methods for scaling functional package management in larger 
+deployments. While functional package management is excellent for maintaining consistent 
+environments, it currently lacks the dynamic scaling features found in containerized systems. 
+By integrating functional package management with orchestration tools like Kubernetes, 
+it may be possible to create systems that maintain strict reproducibility while offering 
+real-time scaling. This could lead to functional package management becoming more viable 
+for cloud-native deployments or environments where traffic demands fluctuate.
 
-Another avenue for future work could explore improving developer experience and
-onboarding with Nix in larger organizations. Although tools like \textbf{services-flake}
-show promise, further work could be done to simplify process orchestration and make
-it easier for larger teams to adopt Nix. By enhancing the usability of Nix in more
-complex environments, it could become an even stronger competitor to Docker for
-managing both development and production environments.
+Additionally, improving the developer experience with functional package management through 
+better tooling and automation could facilitate its adoption in larger teams and organizations. 
+Developing tools that streamline service orchestration, enhance usability, and reduce the 
+learning curve would help functional package management reach a broader audience. Such 
+advancements could also enable its application in areas like infrastructure management, 
+where predictable, reproducible environments are crucial.
 
 \section{Implications for Practice and Research}
-The findings of this thesis have significant implications for both practical applications
-and academic research. From a practical perspective, organizations now have clearer
-guidelines for when to use Nix or Docker based on their project requirements. Small
-companies and startups that focus on maintaining consistency across environments without
-needing to scale dynamically will find Nix highly effective for both development and
-deployment. By contrast, organizations that require rapid scaling and process isolation
-will benefit more from Docker’s containerization model, especially when deploying
-high-traffic applications using orchestration tools like Kubernetes.
+The findings of this thesis have important implications for both practical applications 
+and academic research. Practically, these insights can help guide organizations in selecting 
+the appropriate technology based on their specific needs. For development environments, 
+functional package management offers superior reproducibility and efficiency, making it 
+a better choice than containerization. Organizations should prioritize using functional 
+package management to eliminate dependency conflicts and speed up environment setup. Open-source 
+projects, in particular, can benefit from the consistency and ease of use provided by 
+functional development environments.
 
-The research also highlights the potential value of using Nix for development, even in
-environments where Docker is preferred for production. The use of Nix in development
-environments can reduce the overhead and friction associated with setting up and
-maintaining development environments, particularly in large organizations. This hybrid
-approach, where Nix is used for development and Docker for deployment, ensures that
-teams can maintain reproducibility and efficiency across the software lifecycle,
-balancing the strengths of both technologies.
+For deployment workflows, containerization remains the best option in scenarios that require 
+scalability, service orchestration, and flexibility. However, startups and small organizations 
+should consider whether containerization is truly necessary or if functional package management 
+can provide a simpler, more resource-efficient solution. In cases where traffic is predictable 
+and scalability is not a primary concern, functional package management should be the default 
+choice for deployment.
 
-For academic research, this thesis contributes to the growing body of knowledge on
-software deployment and package management. It provides a comparative analysis of
-functional package management and containerization, identifying where each approach
-excels and where improvements can be made. Future research could build on these
-findings by exploring how Nix and Docker can be integrated more effectively or how
-the scalability challenges of Nix could be addressed. There is also an opportunity
-to study how the principles of functional package management could be applied to
-other areas of software development and infrastructure management, potentially
-leading to new hybrid models that balance the benefits of reproducibility,
-scalability, and flexibility.
+From an academic perspective, this research opens new avenues for exploring hybrid models 
+that combine the benefits of both functional package management and containerization. Future 
+studies could focus on how functional environments can be deployed within containers, 
+maintaining reproducibility while allowing for dynamic scaling. Additionally, research 
+into improving the scalability and orchestration capabilities of functional package management 
+could lead to new frameworks for managing large-scale distributed systems. Comparative studies 
+on the long-term operational efficiency, cost, and security of both systems would provide 
+further insights for practitioners, helping them make more informed decisions when selecting 
+the most appropriate technology for their use cases.
