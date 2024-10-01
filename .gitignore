@@ -24,3 +24,4 @@
 !**/assets/*.pdf
 **/*.synctex.gz
 **/*.synctex(busy)**
+!Thesis.pdf
