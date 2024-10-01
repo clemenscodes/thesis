@@ -4,45 +4,30 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize]
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
-
 jobs:
   ci:
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
-      contents: "write" 
-
+      contents: "write"
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: DeterminateSystems/flake-checker-action@main
-      - run: nix build
-      - name: Create or get release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Build
+        run: |
+          nix build
+          echo "pdf_path=$(readlink -f result/Thesis.pdf)" >> $GITHUB_ENV
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          release_name: "Latest Build"
+          name: Thesis
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Resolve built PDF path
-        id: get_pdf_path
-        run: echo "pdf_path=$(readlink -f result/Thesis.pdf)" >> $GITHUB_ENV
-
-      - name: Upload Thesis.pdf to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.pdf_path }}
-          asset_name: Thesis.pdf
-          asset_content_type: application/pdf
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          make_latest: true
+          files: ${{ env.pdf_path }}
+          token: ${{ secrets.GITHUB_TOKEN }}
