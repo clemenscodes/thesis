@@ -1,0 +1,304 @@
+\chapter{Analysis}
+This chapter presents an in-depth analysis of the performance metrics collected during
+experiments involving Docker and Nix. The goal of this analysis is to compare key metrics
+such as build times and package sizes, which are critical in evaluating the efficiency of
+each technology for creating reproducible environments and deploying software.
+The experiments were designed to be reproducible and transparent, with all tests automated
+via GitHub Actions in a continuous integration (CI) environment. By automating the process,
+consistent conditions were maintained throughout, allowing for accurate comparisons between
+Docker and Nix. The results for these tests are publicly accessible on \href{https://github.com/clemenscodes/webserver/actions}{GitHub}.
+
+\section{Build Times}
+Build times represent the total duration from the start of a build process to its completion.
+For both Docker and Nix, the build times were captured during the CI pipeline. Build time is
+a critical metric as it directly impacts the efficiency of the development process and the
+feedback loop in continuous integration and continuous deployment (CI/CD) environments.
+
+For Docker, the build times were collected by running the CI process and exporting an artifact
+generated during the build. This artifact, named \texttt{.dockerbuild}, contains detailed
+information about the build process, including timestamps. The CI process initiated a Docker
+build for the application without any prior caching, ensuring that the entire build process,
+including dependency resolution and layer creation, was performed. Once the build completed,
+the CI system generated the \texttt{.dockerbuild} artifact, which contains the build details
+such as the start and end times for each build layer. This artifact was then imported into
+Docker Desktop on Windows, where the build times for each layer were inspected. The total
+build time reported corresponds to the duration indicated in Docker Desktop after importing
+the build artifact from the CI system. This method ensures that the Docker build times reflect
+real-world builds where developers would build the application from scratch or with varying
+levels of cache utilization.
+
+For Nix, the build times were measured by capturing the duration of the specific CI step
+responsible for building the application. The Nix build process in the CI pipeline was
+configured to produce a reproducible environment using Nix derivations, ensuring that the
+dependency tree and all necessary packages were included. The CI pipeline executed a Nix
+build of the application, fetching the required dependencies and building the software
+according to the provided Nix expression. The time taken for the Nix build step was measured
+in seconds, from the start of the build to its successful completion. The final build time
+for Nix is based on the total duration of this CI step, which directly reflects the time
+required to build the application.
+
+Both Docker and Nix build times were captured under three different scenarios: cold builds,
+warm builds, and fully cached builds. Cold builds represent a build performed without any
+prior caching, where all dependencies must be resolved and built from scratch. Warm builds
+involve the use of caching mechanisms, such as Docker’s layer caching system or reuse of
+artifacts from the Nix store, and include source code changes that invalidate some parts
+of the cache but not all. This means that some dependencies or components must be rebuilt,
+but parts of the build can still take advantage of previously cached results. Fully cached
+builds, in contrast, are builds where no new source code changes have been introduced, and
+in theory, everything should be cached. In these scenarios, both Docker and Nix skip all
+build steps that can be reused from the cache, resulting in the fastest possible build times.
+
+The following table summarizes the build times for Docker and Nix across these three build
+types:
+
+\begin{table}[H]
+	\centering
+	\caption{Build Time Comparison between Docker and Nix (in seconds)}
+	\label{tab:build_times}
+	\begin{tabular}{|l|c|c|c|}
+		\hline
+		\textbf{Build Type} & \textbf{Docker} & \textbf{Nix GHA Cache} & \textbf{Nix Cachix} \\
+		\hline
+		Cold Build          & 244             & 168                    & 144                 \\
+		Warm Build          & 44              & 152                    & 144                 \\
+		Cached Build        & 9               & 14                     & 3                   \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The build time metric is crucial in evaluating the efficiency of Docker and Nix, particularly
+when looking at how each system handles different types of builds: cold, warm, and fully cached
+builds. The performance differences observed in Table \ref{tab:build_times} highlight how each
+technology handles caching and dependency resolution.
+
+For cold builds, Nix outperforms Docker due to its lightweight and modular approach to handling
+dependencies. In Docker, a cold build involves pulling a base image, which typically includes
+an entire operating system. This process adds significant overhead, as large base images must
+be downloaded and unpacked before the actual build process can begin. Nix, on the other hand,
+does not rely on full base images. Instead, Nix can directly pull the required build-time
+dependencies from pre-existing caches (such as Cachix) or, if necessary, build dependencies
+from source in a fully reproducible manner. This modularity and avoidance of OS-level image
+downloads allow Nix to complete cold builds faster than Docker. This advantage is especially
+noticeable when the project has many external dependencies that can be retrieved from binary
+caches, significantly reducing the need for source compilation.
+
+However, the performance of Nix in warm builds shows almost no improvement over cold builds.
+This is because Nix derivations are built in isolated, immutable environments, which ensures
+that each build is reproducible and free from side effects. While this immutability is one
+of the core strengths of Nix, it also means that Nix cannot reuse intermediate build states
+in the same way Docker can. During the Nix warm build, even if some components are cached,
+the isolation enforced by the derivation system prevents significant reuse of build outputs,
+leading to similar build times as observed in cold builds. This immutability guarantees
+reproducibility but at the cost of speed in scenarios where only minor changes are made to
+the source code.
+
+In contrast, Docker excels in warm builds, as it allows for optimization through selective
+caching and mutation of the build process. By leveraging Docker's layer-based caching system,
+it is possible to separate different stages of the build into distinct layers, each of which
+can be cached independently. For instance, in the Rust project used for these tests, I was
+able to optimize the warm build by mutating the build process. Specifically, I replaced the
+\texttt{main.rs} file with a dummy file during an early build layer, caching all dependencies
+and external crates in that layer. Then, in a subsequent layer, I inserted the actual source
+code, ensuring that only the source code itself needed to be compiled during rebuilds, while
+the dependencies remained cached. This approach allows Docker to cache the heaviest parts of
+the build (dependencies and libraries) while minimizing the amount of work required during
+warm builds, where only the application code changes. This level of optimization is not
+possible with Nix, as derivations are immutable and cannot be modified after being built,
+which is why Nix warm builds show no significant speed advantage compared to cold builds.
+
+When comparing fully cached builds, both Docker and Nix show very fast build times, with Nix
+being slightly faster overall. Fully cached builds represent a scenario where no new source
+code changes have been introduced, meaning that the entire build can be reused from previous
+runs. In this case, the build process simply retrieves all cached results without performing
+any additional compilation or dependency resolution. Nix’s minimal overhead in fetching
+cached derivations, particularly from services like Cachix, gives it a slight edge in speed
+over Docker, which must still handle its layer-based caching system. However, the difference
+is minimal since both systems are designed to avoid redundant work in fully cached builds.
+
+These build time results demonstrate the strengths and weaknesses of each technology in
+different scenarios. Nix's approach to cold builds is highly efficient, but its immutability
+limits performance improvements in warm builds. Docker, while slower for cold builds due to
+its reliance on large base images, excels in warm builds through flexible caching and build
+optimization. Fully cached builds, which minimize overhead in both systems, showcase the
+efficiency of caching mechanisms when no changes are introduced.
+
+\section{Package Sizes}
+The size of the final deployment artifact is an important factor when considering the efficiency
+and practicality of using Docker or Nix for software deployment. Smaller packages generally lead
+to faster installations, reduced storage requirements, and lower bandwidth usage, which can be
+critical in environments where resources are constrained.
+
+For Docker, the package size was measured by examining the size of the Docker image after it
+was built and inspected in Docker Desktop. After building the Docker image in the CI pipeline,
+the image was exported and analyzed locally in Docker Desktop to obtain the final size. This
+method ensures that the reported size reflects the total disk space consumed by the Docker image,
+which includes the base operating system, application code, and all associated dependencies.
+
+In contrast, the size of the Nix package was determined by examining the size of the resulting
+Nix derivation, which was stored in Cachix, a binary cache service. This size reflects only the
+necessary runtime components of the application and does not include any build-time dependencies,
+as those can be garbage collected by the Nix system. By checking the cache size in Cachix, I
+was able to measure the actual size of the derivation after it had been built and uploaded.
+Importantly, the size of the derivation represents only the essential components required to
+run the application, without any extraneous system layers or unused dependencies.
+
+Table \ref{tab:package_size} compares the sizes of the Docker image and the Nix derivation:
+
+\begin{table}[H]
+	\centering
+	\caption{Package Size Comparison between Docker and Nix (in MB)}
+	\label{tab:package_size}
+	\begin{tabular}{|l|c|c|}
+		\hline
+		\textbf{Artifact Type} & \textbf{Docker Image} & \textbf{Nix Derivation} \\
+		\hline
+		Size                   & 31.82                 & 2.78                    \\
+		\hline
+	\end{tabular}
+\end{table}
+
+As illustrated in Table \ref{tab:package_size}, the Nix derivation is significantly smaller
+than the Docker image. This difference in size is due to the fundamental architectural
+differences between Docker and Nix. Docker images must include the entire operating system,
+even when utilizing optimized, lightweight base images such as those built on Alpine Linux.
+Despite these optimizations, there remains a considerable overhead associated with container
+technology because the entire environment, including all libraries and tools required by
+the OS, must be bundled within the image. This results in a larger package size.
+
+In contrast, Nix derivations are inherently smaller because Nix does not bundle an entire
+operating system or redundant components within its package. Instead, Nix focuses on
+providing only the necessary runtime dependencies required to run the application. Since
+Nix derivations are built in an isolated, reproducible environment, any build-time
+dependencies are discarded and can be garbage collected, ensuring that the final package
+contains only the minimal set of dependencies needed to execute the software. This lean
+approach to package management allows Nix to produce much smaller artifacts compared to
+Docker, where the inclusion of a full OS is unavoidable in containerized environments.
+
+Additionally, the smaller package size of Nix derivations translates into faster deployment
+times, as fewer bytes need to be transferred when installing or updating the application.
+In scenarios where bandwidth is limited, or when applications are deployed across multiple
+machines, the reduced size of Nix derivations offers significant advantages. Faster
+installation times also contribute to a more responsive and efficient deployment process,
+particularly in CI/CD pipelines where minimizing downtime and resource usage is crucial.
+
+In summary, while the Docker image was optimized by using lightweight Alpine base images,
+it still requires additional layers to include the operating system and system libraries,
+leading to a larger overall size. Nix, by avoiding these redundancies and focusing only on
+the essential runtime dependencies, produces significantly smaller artifacts that are both
+faster to install and more space-efficient.
+
+\section{Developer Environments and Process Management}
+Both Docker and Nix are commonly used to create isolated, reproducible environments that
+simplify the management of dependencies and tools in software development. However, the
+way each system handles environment configuration, workflow integration, and compatibility
+with different operating systems differs significantly.
+
+Docker uses containers to encapsulate the development environment, including the operating
+system, dependencies, and tools. This ensures that the environment inside the container
+closely resembles production systems, allowing developers to create an image that contains
+the exact tools and dependencies needed for the project. Developers access the environment
+by running the container, which is isolated from the host system. As a result, any tools,
+shell configurations, or personal customizations that developers may have in their native
+environment do not automatically apply within the container. Developers need to manually
+install and configure the necessary tools inside the container. This can involve additional
+steps such as connecting to the container and setting up the development environment from
+scratch.
+
+When using Docker on Windows, a full Linux VM
+must run in the background to enable containerization, since Docker relies on the Linux kernel.
+This VM introduces additional overhead,
+as developers on Windows must manage not only the container itself
+but also the underlying virtual machine. This approach can affect resource usage and
+performance, especially when multiple containers are in use. File system synchronization
+between the host machine and the Linux container can also be slow, with Windows unable
+to automatically notify the container of file changes. This often requires manual container
+refreshes, slowing down the iteration process.
+
+Nix, by contrast, provides a declarative and reproducible approach to managing development
+environments through \texttt{nix-shell}. A Nix shell is defined by a \texttt{shell.nix}
+or \texttt{default.nix} file that lists the exact dependencies and tools required for the
+project. When the developer enters the Nix shell, the environment is set up in the
+developer’s existing shell session without running a separate container or virtual machine.
+This allows developers to use their personal shell configurations, such as aliases and
+custom profiles, while working in the Nix-provided environment.
+
+A key feature of Nix is its ability to pull pre-built packages from binary caches such as
+\textbf{Cachix}. This allows developers to set up fully functional development environments
+without having to build dependencies from source. Companies can host and manage their own
+Nix binary caches, providing employees with ready-to-use, pre-built environments. This
+ensures that developers, even if they have never worked on the project before, can quickly
+install all necessary dependencies without rebuilding them, significantly reducing the
+friction typically involved in setting up new environments. In addition, environments can
+be delivered on a per-branch basis, allowing developers to switch between branches and
+automatically load the appropriate environment for each branch without additional setup.
+This is especially useful in projects with varying dependencies across branches or when
+specific development tools are required for different stages of the project.
+
+Managing multiple services becomes critical as applications grow in complexity, especially
+when databases, message brokers, or other auxiliary services are involved. Docker typically
+uses \textbf{Docker Compose} to orchestrate these services in development environments,
+allowing developers to run multiple containers for services concurrently. This approach
+ensures that each service runs in its own isolated container, simulating a production-like
+environment while keeping processes separated from each other.
+
+In the Nix ecosystem, a similar goal can be achieved without containers using a tool called
+\textbf{services-flake}. It provides a declarative way to define and
+orchestrate services within a project, replacing Docker Compose by running services natively
+on the host system. Built on top of \textbf{process-compose}, \textbf{services-flake} allows
+multiple services to be run concurrently and isolated from one another, without the overhead
+of containers or virtual machines. It integrates directly with the project’s \texttt{flake.nix}
+file, ensuring that services are managed in a reproducible and composable way, similar to
+how Nix handles package management.
+
+It also supports running multiple instances of services (e.g., multiple
+databases) and provides a lightweight, platform-agnostic solution that works across macOS,
+Linux, and other environments where Nix is available. The services are run natively on
+the host system, and data is stored in a project-specific directory. Additionally,
+\textbf{services-flake} provides a terminal-based user interface for monitoring and managing
+the services, similar to how Docker Compose allows developers to manage and control containers.
+
+By utilizing \textbf{services-flake}, developers can orchestrate complex development
+environments that include multiple services, such as databases, caches, and application
+components, all while avoiding the overhead and complexity associated with container
+technology. The native approach taken by \textbf{services-flake} ensures that services
+remain lightweight and easily manageable, with all configurations handled declaratively
+through Nix expressions.
+
+In contrast to Docker’s approach, which focuses on process isolation within containers,
+Nix primarily focuses on package isolation. However, with tools like \textbf{services-flake},
+process isolation in Nix is also achievable, allowing developers to manage multiple services
+in a reproducible, container-less manner, using the same declarative configuration language
+that Nix is known for.
+
+\section{Software Deployments}
+This section presents the observed results from evaluating Docker and Nix in the context of
+software deployment, focusing on scalability, serverless capabilities, and infrastructure
+requirements.
+
+Docker provides a method for deploying software in containerized environments. Docker images
+package applications with their dependencies and operating system, allowing them to be
+deployed across platforms that support Docker. In serverless deployments, Docker integrates
+with orchestration tools like Kubernetes, which manages the scaling of containers. Kubernetes
+can spin up additional containers when traffic increases and shut them down when traffic
+decreases. The deployment results indicate that Docker's container-based packaging supports
+portability, with Docker images able to run independently of the host system. Docker's
+integration with orchestration tools like Kubernetes allows for automated scaling of
+containers based on traffic levels, and the containers can be rapidly started and stopped.
+
+Nix takes a different approach by focusing on package management and reproducibility.
+Nix packages require deployment on systems with the Nix package manager installed, such
+as servers running NixOS. This approach ensures that deployments are reproducible and
+isolated at the package level. However, scaling Nix deployments involves provisioning
+servers with the Nix package manager, which is more manual compared to Docker's automated
+container orchestration. The results show that Nix deployments offer reliable reproducibility
+across environments. Nix deployments also require a fully functional server, and scaling
+must be achieved by adding additional servers manually or using infrastructure automation
+tools compatible with Nix.
+
+In terms of scalability, Docker’s containerization model, combined with Kubernetes,
+demonstrates rapid horizontal scaling capabilities. Docker containers can be deployed
+quickly, making the system suitable for environments with varying traffic levels. In contrast,
+Nix deployments are more static, with scaling requiring server provisioning and management.
+There is no built-in automated scaling equivalent to the container-based scaling observed
+with Docker. These results highlight differences in how Docker and Nix handle scalability
+and deployment automation.

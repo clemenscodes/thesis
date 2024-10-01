@@ -1,0 +1,65 @@
+\section{Approach}
+
+To systematically address the \hyperlink{research_question}{research question}, this thesis
+adopts a comprehensive approach that integrates theoretical analysis, empirical evaluation,
+and practical exploration. The methodology begins with an extensive review of existing
+literature on functional package management and containerization technologies. This literature
+review encompasses academic papers, technical documentation, blog posts, and industry
+reports. The purpose of the review is to gain a thorough understanding of the theoretical
+foundations and practical uses of both functional package management and containerization
+technologies, which are widely used in modern software engineering. The literature review
+provides a foundation by examining the history, core principles, and technical developments
+behind these paradigms, highlighting how they have evolved to solve specific challenges in
+development and deployment. By synthesizing insights from a variety of sources, the literature
+review lays the groundwork for further theoretical and empirical analysis.
+
+The theoretical analysis builds upon the literature by exploring the design philosophies
+and technical structures of both functional package management and containerization
+technologies. In this phase, core elements such as package management, dependency resolution,
+environment isolation, and reproducibility are closely examined. Functional package
+management emphasizes declarative configurations to build environments, ensuring that each
+build is consistent and reproducible. In contrast, containerization technologies encapsulate
+entire environments—including applications, dependencies, and the operating system—within
+isolated units. Particular attention is given to how these approaches handle immutability,
+caching, and dependency conflicts, as these are crucial factors in determining the reliability
+and reproducibility of development environments. This theoretical analysis helps establish
+a conceptual framework for understanding the unique strengths and limitations of both
+functional package management and containerization before moving into empirical testing.
+
+The empirical evaluation is central to this research and involves setting up a series of
+controlled experiments to measure the performance, scalability, and efficiency of functional
+package management and containerization technologies in real-world development and deployment
+scenarios. These experiments are designed to evaluate how each technology performs under
+typical conditions faced by development teams. A key focus is placed on measuring build
+times, deployment speeds, and the size of deployment artifacts. For instance, build times
+are assessed under cold builds, warm builds, and fully cached builds to reflect various
+stages of a developer’s workflow. Both technologies are tested using a web server project
+written in Rust, and the experiments are automated through GitHub Actions, ensuring consistent
+conditions for each test run. The layered caching model of containerization is compared
+to the derivation-based system of functional package management, with metrics such as time
+saved from caching, overall build speed, and the impact of caching on warm and cold builds
+closely monitored. Additionally, the final package sizes produced by both approaches are
+analyzed to determine which technology generates more efficient artifacts for deployment
+in terms of storage and bandwidth. By carefully controlling the experimental conditions,
+the empirical evaluation generates reliable, reproducible data that supports the theoretical
+analysis conducted earlier.
+
+Finally, the findings from both the theoretical analysis and empirical evaluation are
+synthesized in a discussion that critically addresses the \hyperlink{research_question}
+{research question}. This discussion not only compares the performance of functional
+package management and containerization technologies but also explores the practical
+implications for development workflows, deployment processes, and overall project
+management. The strengths, weaknesses, opportunities, and risks of each approach are
+analyzed, offering valuable insights into when it is most appropriate to adopt one
+technology over the other. For instance, while containerization excels in scalable,
+high-traffic environments, functional package management’s reproducibility and lightweight
+approach to package management may be more suited for smaller teams or projects focused
+on deterministic builds. The discussion integrates these findings to provide practical
+recommendations for developers, teams, and organizations aiming to optimize their software
+development and deployment workflows.
+
+This multifaceted approach aims to provide a thorough and nuanced exploration of the
+research question. By combining a detailed theoretical framework with rigorous empirical
+testing, the thesis offers a comprehensive comparison of functional package management
+and containerization technologies, highlighting their similarities, differences, and
+broader implications for modern software engineering practices.

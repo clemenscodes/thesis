@@ -1,0 +1,61 @@
+\section{Setup}
+
+Setting up a reproducible development environment is crucial for ensuring consistency
+and reliability in software development, especially when working across various
+platforms and with diverse team members. In this section, we focus on two
+specific tools: Nix and Docker, which serve as examples of functional package
+management and containerization technologies, respectively. Both tools play a
+vital role in modern development workflows, ensuring that development
+environments can be recreated accurately, no matter where they are deployed.
+
+The following command installs Nix as a multi-user system
+on Unix-based systems such as Linux and macOS.
+
+\begin{lstlisting}[caption={Installing Nix on Linux and macOS}]
+sh <(curl -L https://nixos.org/nix/install) --daemon
+\end{lstlisting}
+
+After installation, Nix must be integrated into the user's shell environment to
+make its commands available. This is done by sourcing the Nix configuration file,
+which is automatically generated during installation. This step ensures that the `nix`
+command and its associated functionalities are accessible within the current shell session.
+
+\begin{lstlisting}[caption={Configuring Shell for Nix}]
+source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+\end{lstlisting}
+
+For Windows users, Nix is not natively supported but can be run using the Windows
+Subsystem for Linux (WSL). WSL provides a Unix-like environment on Windows systems,
+allowing users to install and run Linux applications natively. The same installation
+procedure used on Linux applies within the WSL environment, making it possible for
+Windows users to leverage the functional package management capabilities of Nix.
+
+Once installed and configured, Nix allows users to define their entire development
+environment in a single configuration file (e.g., `default.nix`). This file specifies
+the exact versions of all required dependencies, ensuring that the environment can
+be reproduced across different machines. The ability to roll back environments to
+previous states also helps mitigate issues that might arise during software updates.
+
+To install Docker on Linux,
+users can utilize their system’s package manager. For Debian-based systems,
+the following commands will install Docker and set up permissions so that users can
+run Docker without needing superuser privileges:
+
+\begin{lstlisting}[caption={Installing Docker on Linux}]
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+sudo usermod -aG docker $USER
+newgrp docker
+\end{lstlisting}
+
+For Windows users, Docker Desktop is available, which uses WSL2 as the backend to
+run containers. After installing Docker Desktop, users can interact with Docker
+via its GUI or command-line tools. Docker Desktop also
+handles system-level configurations for networking and storage, making it easier
+to manage containers on Windows systems.
+
+In summary, the setup of development environments using Nix and Docker ensures
+that both package-level and runtime dependencies can be managed in a reproducible
+and isolated manner. These tools form the foundation of reproducible development
+workflows, ensuring that development environments can be easily recreated across
+different systems and stages of software development.

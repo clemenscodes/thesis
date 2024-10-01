@@ -1,0 +1,257 @@
+\section{Reproducible Builds}
+
+In this section, we explore how reproducible builds are achieved
+using functional package management
+through a Nix-based approach, focusing on concepts such as dependency isolation,
+deterministic builds, and environment specification.
+Reproducible builds are an essential concept in software development that ensures
+anyone can build the exact same binary from the same source code, across different
+machines and environments. The idea is to eliminate any potential for variance
+between builds, such as those caused by differing system configurations, dependencies,
+or build tools. In a reproducible build, the input always results in the same output.
+This ensures that developers can trust the integrity and consistency of their builds,
+regardless of where or when the build process takes place.
+
+\subsection{Reproducible Builds with Functional Package Management}
+
+Functional package management systems like Nix introduce immutability and isolation
+into the package management process. Every environment is built from a set of
+declarative rules, ensuring that the same rules always yield the same result.
+The key to reproducible builds in functional package management lies in the
+declarative definition of dependencies and build processes, which eliminates
+the impact of external factors like system state or environment configuration.
+The build process in Nix relies on expressions, such as those written in the
+\texttt{default.nix} file, which define how the software should be built and what
+dependencies are required. These expressions are purely functional, meaning that
+their output is determined entirely by the input. Let us explore how the Nix
+expression for building a Rust application ensures reproducibility.
+The \texttt{default.nix} file begins by importing and filtering the source files,
+which is crucial for maintaining a well-defined input set. The source code and
+other relevant files are explicitly listed, ensuring that only these files are
+used during the build process. This isolates the build from any extraneous files
+in the directory:
+
+\begin{lstlisting}[caption={Source filtering in Nix}]
+src = filter {
+  root = ./.;
+  include = [
+    ./src
+    ./styles
+    ./templates
+    ./assets
+    ./Cargo.lock
+    ./Cargo.toml
+  ];
+};
+\end{lstlisting}
+
+This approach ensures that only the specified files—such as the \texttt{src} directory,
+stylesheets, templates, and the \texttt{Cargo.toml} and \texttt{Cargo.lock} files—are
+included in the build. By filtering the input, Nix guarantees that no unintended
+files or external dependencies are introduced into the build process, contributing
+to the reproducibility of the final output.
+It also ensures that a new derivation is only built
+if the source files for the application changed.
+
+Another key element of reproducible builds is dependency management. In Rust
+projects, the \texttt{Cargo.lock} file locks the exact versions of dependencies,
+ensuring that the same versions are used every time the project is built. Nix
+leverages this concept by importing and hashing the dependencies from the
+\texttt{Cargo.lock} file:
+
+\begin{lstlisting}[caption={Rust dependency management in Nix}]
+cargoDeps = rustPlatform.importCargoLock {
+  lockFile = ./Cargo.lock;
+};
+cargoHash = "sha256-EYTuVD1SSk3q4UWBo+736Mby4nFZWFCim3MS9YBsrLc=";
+\end{lstlisting}
+
+Here, the \texttt{importCargoLock} function imports the exact dependency versions
+defined in \texttt{Cargo.lock}. Additionally, the \texttt{cargoHash} attribute ensures
+that the same dependencies are used by verifying the integrity of the \texttt{Cargo.lock}
+file. This hashing mechanism ensures that even if the dependencies were to change
+in the source repository, the build process would fail unless the \texttt{Cargo.lock}
+file remains unchanged, thereby guaranteeing reproducibility.
+
+In functional package management systems, builds are isolated from the host system,
+and all dependencies must be explicitly defined. This prevents any contamination
+from system libraries or tools, which can lead to non-reproducible builds. In the
+Nix expression, the \texttt{nativeBuildInputs} and \texttt{buildInputs} attributes
+explicitly define the dependencies needed for building the application:
+
+\begin{lstlisting}[caption={Defining build dependencies in Nix}]
+nativeBuildInputs = [pkg-config];
+buildInputs = [openssl];
+\end{lstlisting}
+
+By listing the necessary build inputs (such as \texttt{pkg-config} and \texttt{openssl}),
+Nix ensures that the build process does not rely on any system-wide installed tools
+or libraries. Instead, all dependencies are fetched from the Nix package store,
+where they are versioned and managed immutably. This further strengthens the
+reproducibility of the build, as the same versions of these dependencies will be
+used regardless of the machine or environment in which the build is performed.
+
+Once the application is built, a script can be defined to run the application
+with the necessary environment variables. This is achieved using the
+\texttt{writeShellScriptBin} function, which ensures that the correct paths
+are set for the application’s runtime assets:
+
+\begin{lstlisting}[caption={Generating the run script in Nix}]
+writeShellScriptBin pname ''
+  WEBSERVER_ASSETS=${assets}/assets ${unwrapped}/bin/webserver
+''
+\end{lstlisting}
+
+This script ensures that the \texttt{assets} directory and other runtime resources
+are correctly set up when the application is executed. Since all dependencies,
+build tools, and runtime configurations are explicitly defined within the Nix
+expression, the build and execution of the application remain reproducible
+regardless of the underlying environment.
+
+\subsection{Reproducible Builds Using Containerization}
+
+Containerization technologies, such as Docker, are key to achieving reproducible builds
+by isolating the entire build environment from the host system. A Dockerfile defines
+a controlled environment where the exact dependencies, system libraries, and tools
+are specified, ensuring consistency across different machines and platforms. By
+following best practices, Docker enables reproducible builds that maintain the integrity
+of the software, regardless of external factors such as system configuration or host
+environment changes.
+
+The Dockerfile used in this project adheres to several best practices, including
+multi-stage builds, dependency version pinning, and build optimization. Each section
+of the Dockerfile is crafted to ensure that the resulting binary is reproducible and
+that the build process remains efficient.
+
+The Dockerfile begins by specifying a base image, \texttt{rust:1.80.1-slim-bullseye},
+which provides a minimal Debian environment with the Rust toolchain pre-installed.
+Pinning the image version ensures that the same version of Rust is used in every build,
+eliminating variability that could arise from different versions of the language or
+runtime. This helps achieve reproducibility since it guarantees that the environment
+remains the same over time.
+
+\begin{lstlisting}[caption={Base Image and Environment Setup}]
+FROM rust:1.80.1-slim-bullseye AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=/bin/bash
+ENV PATH="/root/.proto/bin:$PATH"
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Installing Dependencies in Docker}]
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  git=1:2.30.2-1* \
+  gzip=1.10-4* \
+  unzip=6.0-26* \
+  xz-utils=5.2.5-2.1* \
+  curl=7.74.0-1.3* \
+  pkg-config=0.29.2-1* \
+  openssl=1.1.1* \
+  libssl-dev=1.1.1* \
+  musl-tools=1.2.2-1* \
+  make=4.3-4.1* \
+  && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+\end{lstlisting}
+
+In this section, system dependencies are installed using the \texttt{apt-get} package
+manager. Each package is pinned to a specific version, which ensures that future builds
+use the exact same versions, preventing inconsistencies caused by upstream changes.
+The \texttt{--no-install-recommends} option is used to avoid installing unnecessary
+packages, keeping the image as small as possible.
+
+After installation, \texttt{apt-get clean} is run to free up disk space,
+reducing the size of the Docker image. Additionally,
+the \texttt{SHELL} directive with \texttt{-o pipefail} ensures that if any command in
+a pipeline fails, the entire build will fail, which prevents silent failures during
+the build process.
+
+The Dockerfile also includes the use of multi-stage builds to keep the final image
+small and efficient. Multi-stage builds allow us to use a larger image with necessary
+build tools for compiling the application, and then copy only the compiled binary and
+essential files into a smaller runtime image.
+
+\begin{lstlisting}[caption={Multi-Stage Build Setup}]
+FROM base AS build
+
+COPY Cargo.toml Cargo.lock ./
+RUN rustup target add x86_64-unknown-linux-musl && \
+    cargo build --release --target=x86_64-unknown-linux-musl
+
+FROM alpine:3.20.2 AS start
+
+COPY --from=build /app/webserver /usr/local/bin/webserver
+\end{lstlisting}
+
+The first stage, labeled \texttt{build}, compiles the Rust application. The
+\texttt{Cargo.toml} and \texttt{Cargo.lock} files are copied into the container to
+resolve dependencies. By copying these files early, Docker can cache the dependency
+resolution step, improving build times by ensuring that dependencies are only
+recompiled if they change. The Rust target is set to \texttt{x86\_64-unknown-linux-musl},
+ensuring that the binary is statically linked, making it more portable across different
+environments.
+
+The final stage, labeled \texttt{start}, uses the minimal \texttt{alpine:3.20.2} image.
+Only the compiled binary and necessary runtime files are copied from the \texttt{build}
+stage into this smaller image. This keeps the final image lightweight by excluding
+the build tools and unnecessary libraries from the runtime environment. This separation
+of build and runtime environments is a best practice that results in a secure and
+efficient Docker image.
+
+To ensure the Rust binary is fully self-contained and does not rely on dynamic libraries,
+the Dockerfile compiles OpenSSL against the MUSL C library, resulting in a statically
+linked binary. This approach improves portability, as the binary can be deployed on any
+system without requiring shared libraries such as OpenSSL.
+
+\begin{lstlisting}[caption={OpenSSL Compilation with MUSL}]
+RUN ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/x86_64-linux-musl/asm && \
+    ln -s /usr/include/asm-generic /usr/include/x86_64-linux-musl/asm-generic && \
+    ln -s /usr/include/linux /usr/include/x86_64-linux-musl/linux && \
+    mkdir /musl && \
+    curl -LO https://github.com/openssl/openssl/archive/OpenSSL_1_1_1f.tar.gz && \
+    tar zxvf OpenSSL_1_1_1f.tar.gz
+
+WORKDIR /openssl/openssl-OpenSSL_1_1_1f/
+RUN CC="musl-gcc -fPIE -pie" ./Configure no-shared no-async --prefix=/musl \
+    --openssldir=/musl/ssl linux-x86_64 && \
+    make depend && \
+    make -j"$(nproc)" && \
+    make install
+\end{lstlisting}
+
+This process statically links OpenSSL with the Rust binary, enabling the Rust
+application to handle HTTPS connections without needing shared OpenSSL libraries at
+runtime. By statically linking critical libraries, the resulting binary becomes
+fully portable and can be executed in a minimal container, such as the Alpine image,
+without additional dependencies.
+Security best practices are also implemented by running the application as a non-root
+user, which reduces the risk of privilege escalation attacks. In the final stage,
+a non-root user named \texttt{webserver} is created, and the ownership of the binary
+is transferred to this user.
+
+\begin{lstlisting}[caption={Running the Application as a Non-Root User}]
+RUN addgroup -g 1000 webserver && \
+    adduser -D -s /bin/sh -u 1000 -G webserver webserver && \
+    chown webserver:webserver /usr/local/bin/webserver
+
+USER webserver
+
+CMD ["webserver"]
+\end{lstlisting}
+
+Running the application as a non-root user is a Docker best practice, as it limits
+the potential impact of any security vulnerabilities within the application. The
+\texttt{CMD} directive ensures that the container will execute the \texttt{webserver}
+binary when it starts.
+
+This Dockerfile follows several best practices to ensure a reproducible, secure, and
+efficient build of the Rust web server. By using multi-stage builds, pinning dependency
+versions, and statically linking critical libraries, the Dockerfile guarantees that
+the build is consistent and portable across different systems. These practices also
+ensure that the final image is as small as possible, minimizing the attack surface and
+reducing resource usage. The use of a non-root user and the minimal Alpine image
+further enhance the security and efficiency of the resulting container, making it
+well-suited for deployment in production environments.
+

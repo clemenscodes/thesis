@@ -1,0 +1,75 @@
+\documentclass[
+   final,
+   paper=a4,
+   paper=portrait,
+   pagesize=auto,
+   fontsize=11pt,
+   version=last,
+ ]{scrreprt}
+
+\usepackage[utf8]{inputenc}
+
+\def\lang{english}
+\def\declareUseOfGenerativeAITool{ChatGPT~4o}
+
+\input{lib/preambel/settings}
+\input{lib/preambel/preambel}
+
+\author{Clemens Horn}
+
+\thesis{Bachelor Thesis}
+
+\title{Functional Package Management and Containerization Technologies in Development Environments and Software Deployment}
+
+\academicTitle{Bachelor of Science}
+
+\firstReferee{Prof. Dr. Dennis Priefer}
+\secondReferee{Kevin Linne, M.Sc.}
+
+\input{lib/commands/newcommands}
+\input{lib/commands/TableCommands}
+\input{lib/preambel/Hyphenation}
+
+\begin{document}
+
+\input{src/title/00_Title}
+\input{src/abstract/00_Abstract}
+
+\cleardoublepage
+
+\frontmatter
+
+\cleardoublepage
+
+\pdfbookmark[1]{Table of Contents}{toc}
+
+\tableofcontents
+
+\cleardoublepage
+
+\mainmatter
+
+\input{src/chapters/01_Introduction/00_Index}
+\input{src/chapters/02_Theoretical_Foundations/00_Index}
+\input{src/chapters/03_Practical_Application/00_Index}
+\input{src/chapters/04_Analysis/00_Index}
+\input{src/chapters/05_Conclusion/00_Index}
+
+\bibliography{lib/bib/BibtexDatabase}
+
+\IfDefined{printindex}{\printindex}
+\IfDefined{printnomenclature}{\printnomenclature}
+
+\input{src/nomenclature/Index}
+
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+
+\listoffigures
+\listoftables
+\lstlistoflistings
+
+\appendix
+
+\input{src/appendix/Z-Appendix}
+
+\end{document}

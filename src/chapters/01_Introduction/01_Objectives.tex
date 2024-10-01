@@ -1,0 +1,59 @@
+\section{Objectives}
+
+The primary goal of this thesis is to provide a comprehensive comparison between
+functional package management and containerization technologies as development and
+deployment tools. The thesis seeks to analyze these two paradigms through empirical
+and practical exploration, focusing on key metrics such as build times, deployment
+speeds, package sizes, and the management of developer environments.
+
+At the heart of this research is the central question: \textbf{How do functional package
+	management and containerization technologies compare as development and deployment
+	tools, and what recommendations can be derived for enterprises that use these
+	technologies?} The purpose of this research is to offer insights that help developers
+and organizations make informed decisions about which technology to adopt depending
+on their specific needs.
+
+In order to thoroughly explore this question, the thesis pursues several objectives.
+First, it aims to examine the philosophical underpinnings of both functional package
+management and containerization. Functional package management emphasizes immutability,
+reproducibility, and declarative configurations. Containerization technologies, on
+the other hand, center on process isolation, portability, and flexibility. These core
+principles are vital to understanding the broader context in which each paradigm
+excels. It is essential to investigate how these philosophies impact the setup and
+management of development environments, software reproducibility, and the overall
+software lifecycle.
+
+The second objective is to conduct a technical analysis of the implementation details
+that differentiate these technologies. By evaluating their declarative configurations
+and lifecycle management, the thesis explores how these approaches provide strengths
+and expose limitations, particularly in areas like environment isolation, package
+dependencies, and configuration complexity. These technical distinctions reveal the
+potential benefits and constraints of using either functional package management or
+containerization technologies in different development contexts.
+
+The third objective is to apply these technologies to a real-world project to provide
+empirical evidence of their effectiveness. A web server written in Rust serves as the
+test bed for demonstrating how functional package management and containerization
+behave under practical conditions, with a focus on dependency management, environment
+isolation, build reproducibility, and deployment. This case study illustrates how each
+technology can handle typical tasks faced by development teams and highlights specific
+scenarios where one approach may be more suitable than the other.
+
+Finally, the thesis evaluates performance metrics such as build times, package sizes,
+and deployment scalability. Build times are crucial because they directly affect
+developer productivity and the continuous integration/continuous deployment (CI/CD)
+pipeline. By comparing containerization's layered caching approach with the derivation-based
+build system of functional package management, the research examines how quickly each
+system can produce artifacts under various conditions. Package size, another key metric,
+has significant implications for storage and network bandwidth, particularly in
+production environments. The streamlined derivations of functional package management,
+compared to the larger images produced by containerization technologies, highlight
+the potential advantages of functional package management in terms of efficiency.
+Furthermore, scalability and deployment speeds are assessed to determine how well
+these systems perform when scaled to meet increasing production demands.
+
+Through these objectives, this thesis aims to offer concrete, data-driven recommendations
+to organizations and developers, helping them select the most suitable tools for their
+development and deployment processes. The goal is to enhance the efficiency, reliability,
+and scalability of software workflows while providing a clear comparison of functional
+package management and containerization technologies.

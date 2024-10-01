@@ -1,0 +1,266 @@
+\section{Continuous Integration/Continuous Deployment (CI/CD)}
+
+Continuous Integration and Continuous Deployment are key practices in modern
+software engineering. These practices automate the processes of building, testing,
+and deploying applications, ensuring consistent, reliable workflows. For the
+application developed in this thesis, GitHub Actions was used to orchestrate the
+CI/CD pipeline. GitHub Actions is particularly suited for CI/CD pipelines because
+of its seamless integration with GitHub repositories, especially for projects
+hosted on GitHub.
+
+One of the main benefits of GitHub Actions is its ability to trigger workflows
+automatically based on events like \texttt{push} or \texttt{pull\_request}. This
+automation ensures that new code is built, tested, and deployed immediately,
+without manual intervention. Moreover, GitHub Actions is free for public
+repositories, which makes it a cost-effective solution for open-source projects
+and smaller teams. In this project, GitHub Actions handles the entire CI/CD process
+without additional infrastructure costs.
+
+GitHub Actions also provides a variety of pre-built actions and plugins that make
+it easy to set up and manage complex workflows. These actions can handle tasks such
+as checking out the repository, logging into container registries, setting up Docker
+environments, and even managing multi-platform builds. In this application, several
+pre-built actions are used to automate the CI/CD process, reducing the need for
+custom scripts. This increases both the speed and reliability of the pipeline,
+since these actions are maintained by a broader community and official providers.
+
+A key feature of GitHub Actions is its built-in caching mechanism, which helps
+improve performance for containerized applications. For projects using Docker,
+caching can significantly reduce build times by avoiding the need to rebuild all
+layers of a Docker image from scratch. Instead, unchanged layers from previous
+builds are reused. This optimization is especially useful in large projects where
+Docker images may consist of multiple layers. In the application, Docker layer
+caching is employed extensively to speed up the CI/CD pipeline, ensuring efficient
+and rapid builds.
+The workflow builds and pushes Docker images to the GitHub Container Registry
+(GHCR). GHCR is tightly integrated with GitHub, offering a secure and convenient
+place to store Docker images. GitHub Actions can log into GHCR using tokens and
+permissions, avoiding the need for external credentials. This integration ensures
+secure image management, reduces friction when working with container registries,
+and enhances the overall security model by avoiding the need to manage sensitive
+credentials manually.
+
+The CI/CD pipeline is composed of several steps, each designed to handle specific
+parts of the process. Below are the key sections of the workflow file, along with
+explanations of the important actions.
+
+The first step defines the events that trigger the pipeline. In this case, the
+workflow is triggered when code is pushed to the \texttt{main} branch or when a
+pull request is created or updated.
+
+\begin{lstlisting}[caption={Triggering Events}]
+name: Docker GHA Cache
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize]
+\end{lstlisting}
+
+This setup ensures that any code changes pushed to the \texttt{main} branch, or any
+modifications to an open pull request, will trigger the CI/CD pipeline. This helps
+maintain continuous feedback and ensures that code is always tested and built
+consistently.
+
+Concurrency control is also defined to prevent multiple workflows from running
+simultaneously for the same branch or pull request. This avoids redundant builds and
+ensures that only the most recent changes are processed.
+
+\begin{lstlisting}[caption={Concurrency Settings}]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+\end{lstlisting}
+
+Environment variables are used to define key settings like the Docker registry and
+image name. By using environment variables, the workflow becomes more flexible and
+easier to maintain.
+
+\begin{lstlisting}[caption={Environment Variables}]
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+\end{lstlisting}
+
+This setup ensures that the Docker image is built with the correct registry and
+repository name, avoiding the need to hardcode these values in the workflow.
+
+The next part of the workflow defines the job that will run on an
+\texttt{ubuntu-latest} runner. The repository is checked out using the
+\texttt{actions/checkout@v4} action to ensure that the latest code is available for
+the build process.
+
+\begin{lstlisting}[caption={Job Setup and Repository Checkout}]
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+\end{lstlisting}
+
+Once the code has been checked out, the workflow logs into the GitHub Container
+Registry using the \texttt{docker/login-action@v3}. This action allows GitHub
+Actions to securely authenticate and push Docker images to the registry using
+\texttt{GITHUB\_TOKEN}.
+
+\begin{lstlisting}[caption={Logging into the GitHub Container Registry}]
+- name: Log in to the Container registry
+  uses: docker/login-action@v3
+  with:
+    registry: ${{ env.DOCKER_REGISTRY }}
+    username: ${{ github.actor }}
+    password: ${{ secrets.GITHUB_TOKEN }}
+\end{lstlisting}
+
+Using the \texttt{docker/setup-buildx-action@v3} action, Docker Buildx is set up.
+Buildx provides advanced features such as
+multi-platform builds and more efficient caching.
+
+\begin{lstlisting}[caption={Setting up Docker Buildx}]
+- name: Set up Docker Buildx
+  uses: docker/setup-buildx-action@v3
+\end{lstlisting}
+
+Metadata for the Docker image is extracted using the
+\texttt{docker/metadata-action@v5}. This ensures that the image is properly tagged
+and labeled for version management.
+
+\begin{lstlisting}[caption={Extracting Metadata for Docker Image}]
+- name: Extract metadata (tags, labels) for Docker
+  id: meta
+  uses: docker/metadata-action@v5
+  with:
+    images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+\end{lstlisting}
+
+Finally, the Docker image is built and pushed to the GitHub Container Registry using
+the \texttt{docker/build-push-action@v6}. Caching is enabled to reuse unchanged
+layers from previous builds, significantly reducing build times.
+
+\begin{lstlisting}[caption={Building and Pushing the Docker Image}]
+- name: Build and push Docker image
+  id: push
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    push: true
+    tags: ${{ steps.meta.outputs.tags }}
+    labels: ${{ steps.meta.outputs.labels }}
+    cache-from: type=gha
+    cache-to: type=gha,mode=max
+\end{lstlisting}
+
+This caching mechanism is vital for optimizing the CI/CD pipeline, as it speeds up
+subsequent builds by avoiding the need to rebuild Docker layers that have not
+changed. This is particularly useful for larger projects where Docker images
+consist of multiple layers.
+
+For the Nix-based project components, two different CI pipelines are used: one that
+leverages GitHub Actions' built-in caching and another that uses Cachix, a service
+designed to cache Nix build artifacts across different environments. Both pipelines
+help ensure reproducibility by caching build results and avoiding unnecessary
+rebuilds.
+
+The first workflow uses the \texttt{magic-nix-cache} action to store Nix build
+artifacts within GitHub Actions’ cache. This setup is fully integrated within the
+GitHub environment, making it easy to use.
+The job runs on an \texttt{ubuntu-latest} runner, and Nix is installed using the
+\texttt{DeterminateSystems/nix-installer-action@main}. The code is checked out, and
+the build process is initiated using the Nix flake configuration.
+
+\begin{lstlisting}[caption={GitHub Runner and Nix Installation}]
+jobs:
+  magic-nix-cache:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: "write"
+      contents: "read"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+\end{lstlisting}
+
+Cachix is used in the second pipeline to provide caching that can be shared between
+CI pipelines and local developer environments. This allows developers to reuse
+build results across environments, improving productivity.
+The key element in the Nix CI pipeline using Cachix is that it allows caching
+of Nix flake inputs, development shells, and runtime closures. By pushing
+these caches to the Cachix service, developers can reuse previously built
+derivations, improving both CI and local development build times.
+
+\begin{lstlisting}[caption={Caching Nix Flake Inputs}]
+      - name: Cache flake inputs
+        run: |
+          nix flake archive --json \
+            | jq -r '.path,(.inputs|to_entries[].value.path)' \
+            | cachix push ${{ env.NIX_CACHE }}
+\end{lstlisting}
+
+The `nix flake archive` command is used to archive Nix flake inputs (dependencies
+defined in the Nix configuration), and the results are pushed to the Cachix cache
+to be reused in future builds.
+
+The next step caches the development shell, enabling developers to pull a cached
+shell environment, ensuring that their local environment is identical to the CI
+environment.
+
+\begin{lstlisting}[caption={Caching the Development Shell}]
+      - name: Cache development shell
+        run: |
+          nix develop --accept-flake-config --profile \
+            ${{ env.NIX_DEV_PROFILE }} -c true
+          cachix push ${{ env.NIX_CACHE }} ${{ env.NIX_DEV_PROFILE }}
+\end{lstlisting}
+
+Finally, the runtime closures (outputs of the Nix build) are cached. This ensures
+that the project can be rebuilt without needing to recompile unchanged parts of
+the project, saving time.
+
+\begin{lstlisting}[caption={Caching Runtime Closures}]
+      - name: Cache runtime closures
+        run: |
+          nix build --accept-flake-config --json \
+            | jq -r '.[].outputs | to_entries[].value' \
+            | cachix push ${{ env.NIX_CACHE }}
+\end{lstlisting}
+
+By caching both the flake inputs and the development shell, the Nix CI pipeline
+significantly reduces build times for both CI and local environments, making it
+a robust and efficient system for handling functional package management in the
+project.
+
+This chapter has provided an in-depth exploration of the CI/CD pipeline setup for
+the application, focusing on two key technologies: containerization using Docker
+and functional package management through Nix. The workflows designed for the
+project not only ensure reproducibility and consistency but also streamline the
+development process by automating key tasks such as building, testing, and deploying
+the application. These workflows, powered by GitHub Actions, emphasize best practices
+for modern software engineering, such as dependency version pinning, caching, and
+secure image management.
+
+The use of Docker and Nix in the CI/CD pipeline demonstrates how containerization
+and functional package management can be employed to maintain a stable development
+environment, reducing the risk of inconsistencies between development, testing,
+and production environments. Caching mechanisms, both for Docker images and Nix
+derivations, play a crucial role in speeding up the build process, making the entire
+CI/CD pipeline more efficient.
+
+The workflow designs provided here are not specific to any
+particular software stack or industry but represent best practices that can be
+adopted across the board to ensure consistency, security, and performance in
+development operations.
+
+It is important to note that everything described in this chapter serves as both
+a guideline and a proof of concept for how companies can implement reproducible,
+efficient CI/CD pipelines utilizing functional package management
+or containerization technologies in their own environments.
+The tools and concepts discussed
+here are widely applicable and can be adapted to fit various types of projects and
+software architectures.
+

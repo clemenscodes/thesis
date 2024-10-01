@@ -1,20 +1,17 @@
 {
   inputs = {
-    utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = {
-    self,
-    nixpkgs,
-    utils,
-  }:
-    utils.lib.eachDefaultSystem (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in {
-        devShell = pkgs.mkShell {
-          buildInputs = [];
-        };
-      }
-    );
+  outputs = inputs:
+    with inputs;
+      flake-utils.lib.eachDefaultSystem (
+        system: let
+          pkgs = import nixpkgs {inherit system;};
+          tex = pkgs.texlive.combine {inherit (pkgs.texlive) scheme-full;};
+        in
+          with pkgs; {
+            devShell = mkShell {buildInputs = [tex gnumake zotero];};
+          }
+      );
 }

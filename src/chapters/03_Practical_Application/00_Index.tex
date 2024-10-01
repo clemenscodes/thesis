@@ -1,0 +1,65 @@
+\chapter{Practical Application}
+
+This chapter presents the practical application of functional package management and
+containerization technologies through the development and deployment of a stateless
+web server written in the Rust programming language \cite{RustProgrammingLanguage}.
+The primary objective is to demonstrate the effectiveness, challenges, and benefits
+of using functional package management and containerization technologies in a real-world
+project. While Nix and Docker are the specific tools selected for this implementation,
+the emphasis is on the general principles and methodologies of functional package
+management and containerization technologies, rather than the tools themselves.
+
+The web server in question serves both static and dynamic content. Although the server’s
+functionality is relatively straightforward, it is well-suited for illustrating modern
+practices in environment management and deployment workflows. The server fetches data
+from an API and returns web content in HTML, utilizing HTMX for dynamic interaction
+\cite{HtmxHighPower} and Tailwind CSS for styling \cite{TailwindCSSRapidly2020}. This
+project aims to highlight the integration of functional package management and
+containerization technologies, focusing on how they manage dependencies, ensure
+reproducible builds, and facilitate the deployment of the application in an isolated
+environment. The complete source code is publicly available on GitHub
+\cite{hornClemenscodesWebserver2024}, allowing for replication of the setup.
+
+The practical importance of this project lies not in the complexity of the web server
+itself, but in the techniques used to manage the server’s development and deployment
+environments. One of the primary challenges addressed in this project is the management
+of specific compile-time dependencies, such as OpenSSL, which are required for building
+the server. These dependencies provide an ideal scenario for demonstrating how functional
+package management handles complex build environments while ensuring reproducibility.
+Additionally, this project enables a comparison of how functional package management
+and containerization technologies contribute to modern development workflows, with a
+focus on key aspects such as ease of use, build times, environment isolation, and
+reproducibility.
+
+This chapter is structured progressively, beginning with detailed instructions on
+setting up the development environments using both functional package management and
+containerization technologies. This includes installing and configuring Nix for functional
+package management and Docker for containerization, with specific attention to how these
+tools are used on various platforms, such as Linux or Windows.
+Following the installation process, the chapter covers how to integrate these technologies
+into IDEs like Visual Studio Code,
+which improves productivity by allowing the developer to manage dependencies, run builds,
+and isolate environments directly from the IDE.
+Next, the chapter demonstrates how each technology was utilized to build and run the web
+server using best practices. Nix was employed for managing dependencies and ensuring
+reproducibility in development environments, while Docker was used to package the
+application into containers for deployment. Code snippets are provided to show how the
+technologies were configured, and best practices are highlighted to ensure that the
+development and deployment processes are efficient and reliable.
+The chapter concludes with a section on CI/CD pipelines,
+configured using GitHub Actions. Separate workflows were created for
+functional package management and containerization technologies, allowing for a comparison
+of their performance in automated testing and deployment environments. Each workflow is
+explained in detail, showing how both approaches can be integrated into modern CI/CD pipelines.
+
+This chapter serves as the foundation for the analysis presented in the next chapter, which
+will delve deeper into the comparative evaluation of functional package management and
+containerization technologies. Here, the focus remains on the practical steps taken, while
+the analysis of their respective strengths, weaknesses, and impacts on development workflows
+will follow.
+
+\input{src/chapters/03_Practical_Application/01_Setup.tex}
+\input{src/chapters/03_Practical_Application/02_Environments.tex}
+\input{src/chapters/03_Practical_Application/03_Builds.tex}
+\input{src/chapters/03_Practical_Application/04_CICD.tex}
+

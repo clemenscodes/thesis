@@ -1,0 +1,164 @@
+\section{Overview of Functional Package Management}
+
+This section introduces the fundamental concepts and scope of functional package
+management, laying the groundwork for a detailed exploration of its core concepts,
+architectural design, and practical examples.
+
+\subsection{Definition and Scope of Functional Package Management}
+
+Functional package management is a method for managing software packages by treating
+them as immutable entities, ensuring reproducibility, and using declarative configuration
+methods \cite[Section 2.1]{courtesFunctionalPackageManagement2013}. Unlike traditional
+package management systems, which allow in-place upgrades and manual dependency handling,
+functional package management guarantees that each package and its dependencies remain
+unchanged once created \cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+This immutability allows for the creation of reproducible environments, ensuring
+consistent configurations across different systems and times, thus mitigating the
+"it works on my machine" problem \cite[Section 2, Page 5]{rahmanWorksMeCannot2022}.
+
+The scope of functional package management includes immutability, reproducibility,
+and declarative configuration. Immutability means that any updates or changes to a
+package result in a new version, leaving the original version intact
+\cite[Page 84]{dolstraNixSafePolicyFree2004}. Reproducibility involves capturing
+the exact state of the build environment, including all dependencies and their
+versions, allowing for precise recreation of environments
+\cite[Section 2.1]{courtesFunctionalPackageManagement2013}. Declarative configuration
+involves describing the desired state of the system, with the package manager handling
+the necessary adjustments to achieve that state \cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
+
+A core aspect of functional package management is \textit{dependency closure}, which
+ensures that all dependencies required for a package are completely defined and isolated
+from the global system. This prevents dependency conflicts and ensures that different
+versions of a package can coexist \cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}.
+Functional package management systems like Nix also guarantee strict reproducibility by
+hashing all inputs, including dependencies and system configurations, used in the build
+process. This ensures that package builds remain identical over time
+\cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+
+An important concept in functional package management is \textit{dependency closure},
+which ensures that different versions of dependencies can coexist without conflicts.
+This technique prevents dependency hell and ensures that packages are built in isolation,
+so different applications or parts of the system can operate independently
+\cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}. By ensuring that packages
+include their full set of dependencies, Nix guarantees that the build process can
+reproduce identical results across different systems and times
+\cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
+
+Functional package management excels in scenarios where \textit{long-term stability}
+is crucial. Industries like scientific computing or regulated environments benefit
+from its guarantee that any system or environment configuration can be rebuilt,
+even years later, without deviation from the original setup
+\cite[Section 2, Page 5]{rahmanWorksMeCannot2022}. By maintaining immutable
+package versions and using exact versions for every dependency, these systems ensure
+that builds are not subject to drift over time. This stands in contrast to traditional
+systems, where updates to libraries and dependencies can introduce uncertainty into
+future builds \cite[Chapter 5.2]{dolstraPurelyFunctionalSoftware2006}.
+
+Furthermore, functional package management reduces system pollution. Developers can
+use tools like \texttt{nix develop} or \texttt{nix-shell} to create isolated development
+environments without modifying the global system. This approach allows quick
+reinitialization by symlinking the required packages, significantly reducing
+initialization time compared to container-based solutions
+\cite{NixDevelopNix, NixshellNixReference}. As a result, developers can rapidly
+switch between different project environments while ensuring that the global
+environment remains clean and unaffected.
+
+\subsection{Examples of Functional Package Management Systems}
+
+Several systems exemplify the principles and benefits of functional package management.
+These systems provide robust tools for managing software packages and their dependencies
+in a reproducible and declarative manner, making them suitable for complex development
+environments and deployment scenarios.
+
+One prominent example is Nix, a functional package manager that employs a purely
+functional approach to package management. Nix ensures that each build is isolated
+and reproducible by using Nix expressions, which describe how packages are built.
+This approach guarantees that every dependency is explicitly defined and accounted for,
+allowing for precise replication of environments. Nix's unique features, such as the
+Nix store, where packages are stored in a way that ensures immutability, and its garbage
+collection mechanism, which automatically removes unused packages, make it a powerful
+tool for managing software in a consistent and reliable manner
+\cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+
+Another notable example is GNU Guix, which is built on top of the Nix package manager
+\cite{AcknowledgmentsGNUGuix} and extends its functionality with a focus on free
+software principles. Guix uses Scheme, a dialect of Lisp \cite{LispProgrammingLanguage2024},
+for its configuration language, providing a high degree of flexibility and power in
+defining package configurations and system setups. Like Nix, Guix ensures reproducibility
+and immutability, making it an excellent choice for environments where these properties
+are critical.
+
+Both Nix and Guix exemplify the core principles of functional package management.
+They provide the tools and frameworks necessary to create and maintain reproducible,
+immutable, and declaratively configured environments, offering significant benefits
+for both development and deployment of software.
+
+\subsection{Architecture and Key Principles of Functional Package Management}
+
+Functional package management systems are built on several key architectural components
+and principles that work together to ensure immutability, reproducibility, and predictability
+in software management. By understanding both the architecture and the underlying principles,
+we gain insight into how these systems achieve their goals.
+
+At the core of functional package management is the purely functional approach, where operations
+like installing, updating, or removing a package do not have side effects. Instead of altering
+the global system state, these operations create a new system state, ensuring predictability
+and reversibility \cite[Section 2.1]{courtesFunctionalPackageManagement2013}. This concept
+directly supports the architecture by ensuring system consistency even as packages are added
+or modified.
+
+A central component of the architecture is the Nix store, a centralized location where all
+package versions and their dependencies are stored. Each package is stored under a unique
+path based on its hash, ensuring that once a package is built, it cannot be modified, preserving
+its immutability \cite[Chapter 5.2]{dolstraPurelyFunctionalSoftware2006}. This immutability
+guarantees system stability, as packages cannot be altered once installed. Updates or
+modifications result in new versions, which are stored alongside older versions, allowing
+for versioning and rollback functionality \cite[Chapter 1.5]{dolstraPurelyFunctionalSoftware2006}.
+
+Another critical architectural component is the build system, which constructs packages from
+source code. The build system captures the complete environment required to build a package,
+including all dependencies such as compiler versions and libraries. This ensures reproducibility,
+meaning the same inputs will always produce the same outputs
+\cite[Section 2.6]{dolstraPurelyFunctionalSoftware2006}. Reproducibility is crucial in ensuring
+that software environments can be exactly recreated across different systems, an essential
+feature for both development and production.
+
+Functional package management also relies on declarative configuration, which simplifies system
+management by allowing users to specify the desired state of the system instead of providing
+step-by-step instructions on how to achieve it \cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+This declarative approach is facilitated by the configuration language, a domain-specific language
+or format used to declare package dependencies and system configurations. In Nix, this is
+achieved through Nix expressions, which provide a flexible and powerful way to define system
+configurations \cite[Chapter 2.2]{dolstraPurelyFunctionalSoftware2006}.
+
+Dependency closure is another key concept underpinning functional package management. In traditional
+systems, dependencies can conflict, causing issues across applications. In functional systems, each
+package includes all its dependencies, ensuring independent functionality without conflicts
+\cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}. This architectural decision ensures that
+different versions of the same dependency can coexist without interfering with each other, a crucial
+feature in complex environments.
+
+Functional package management systems also employ garbage collection to manage disk space. Since
+packages are immutable, old versions remain in the system unless explicitly removed. The system
+automatically identifies and removes unused packages, ensuring that only the necessary packages
+are retained \cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+
+The combination of these architectural components and principles provides a robust and efficient
+framework for managing software. The isolation of packages, made possible through dependency
+closure and immutability, ensures that different packages do not interfere with each other. This
+is particularly important in multi-application environments, where different applications may
+require different versions of the same dependency \cite[Chapter 2.1]{dolstraPurelyFunctionalSoftware2006}.
+
+By focusing on immutability, reproducibility, and declarative configuration, functional package
+management systems offer significant advantages over traditional methods. The architecture is
+designed to support these principles, providing predictability, reliability, and ease of use in
+managing complex software environments.
+
+Versioning and rollback capabilities provide a safety net by allowing users to revert to previous
+system states, further enhancing system stability \cite[Chapter 1.5]{dolstraPurelyFunctionalSoftware2006}.
+Each change in the system is transactional, ensuring that updates are consistent and can be reversed
+if necessary.
+
+Together, these key principles and architectural components form the foundation of functional
+package management, ensuring that software environments are isolated, reproducible, and maintainable
+across different use cases.

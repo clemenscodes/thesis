@@ -1,0 +1,54 @@
+# https://moonrepo.dev/docs/config/project
+$schema: "https://moonrepo.dev/schemas/project.json"
+id: paper
+project:
+  name: "paper"
+  description: "Thesis"
+tags:
+  - "thesis"
+  - "latex"
+type: "application"
+tasks:
+  build:
+    command: "make"
+    platform: "system"
+    options:
+      cache: false
+      outputStyle: "stream"
+      windowsShell: 'pwsh'
+    inputs:
+      - 'src/**/*'
+      - 'lib/**/*'
+      - 'main.tex'
+    outputs:
+      - 'build/'
+  clean:
+    command: "make clean"
+    platform: "system"
+    options:
+      cache: false
+      outputStyle: "stream"
+      windowsShell: 'pwsh'
+  view-unix:
+    deps:
+      - "paper:build"
+    command: "xdg-open build/main.pdf"
+    platform: "system"
+    local: true
+    options:
+      cache: false
+      interactive: true
+      outputStyle: "stream"
+      windowsShell: 'pwsh'
+  view-win:
+    deps:
+      - "paper:build"
+    command: "Start-Process -FilePath build/main.pdf -Wait"
+    platform: "system"
+    local: true
+    options:
+      cache: false
+      interactive: true
+      outputStyle: "stream"
+      windowsShell: 'pwsh'
+
