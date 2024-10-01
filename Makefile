@@ -16,7 +16,6 @@ all: build
 
 build: $(MAIN_TEX) $(TEX_FILES) $(LIB_FILES)
 	@$(LATEXMK)
-	@cp $(BUILD_DIR)/$(INDEX).pdf Thesis.pdf
 
 clean:
 	@$(LATEXMK) -c
@@ -26,4 +25,6 @@ cleanall:
 	@$(LATEXMK) -CA
 	@rm -rf $(BUILD_DIR)
 
+install:
+	@cp $(BUILD_DIR)/$(INDEX).pdf Thesis.pdf
 .PHONY: all clean cleanall
