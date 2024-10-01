@@ -16,7 +16,7 @@ all: build
 
 build: $(MAIN_TEX) $(TEX_FILES) $(LIB_FILES)
 	@$(LATEXMK)
-	@mv $(BUILD_DIR)/$(INDEX).pdf Thesis.pdf
+	@cp $(BUILD_DIR)/$(INDEX).pdf Thesis.pdf
 
 clean:
 	@$(LATEXMK) -c
