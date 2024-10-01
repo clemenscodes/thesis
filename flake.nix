@@ -8,10 +8,23 @@
       flake-utils.lib.eachDefaultSystem (
         system: let
           pkgs = import nixpkgs {inherit system;};
-          tex = pkgs.texlive.combine {inherit (pkgs.texlive) scheme-full;};
         in
           with pkgs; {
-            devShell = mkShell {buildInputs = [tex gnumake zotero];};
+            devShell = mkShell {
+              buildInputs = [
+                (texlive.combine {
+                  inherit (texlive) scheme-full;
+                })
+                gnumake
+                zotero
+                moon
+              ];
+              shellHook = ''
+                moon setup
+                moon sync projects
+                export MOON=$(pwd)
+              '';
+            };
           }
       );
 }

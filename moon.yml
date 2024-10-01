@@ -1,8 +1,8 @@
 # https://moonrepo.dev/docs/config/project
 $schema: "https://moonrepo.dev/schemas/project.json"
-id: paper
+id: thesis
 project:
-  name: "paper"
+  name: "thesis"
   description: "Thesis"
 tags:
   - "thesis"
@@ -15,23 +15,23 @@ tasks:
     options:
       cache: false
       outputStyle: "stream"
-      windowsShell: 'pwsh'
+      windowsShell: "pwsh"
     inputs:
-      - 'src/**/*'
-      - 'lib/**/*'
-      - 'main.tex'
+      - "src/**/*"
+      - "lib/**/*"
+      - "main.tex"
     outputs:
-      - 'build/'
+      - "build/"
   clean:
     command: "make clean"
     platform: "system"
     options:
       cache: false
       outputStyle: "stream"
-      windowsShell: 'pwsh'
+      windowsShell: "pwsh"
   view-unix:
     deps:
-      - "paper:build"
+      - "thesis:build"
     command: "xdg-open build/main.pdf"
     platform: "system"
     local: true
@@ -39,10 +39,10 @@ tasks:
       cache: false
       interactive: true
       outputStyle: "stream"
-      windowsShell: 'pwsh'
+      windowsShell: "pwsh"
   view-win:
     deps:
-      - "paper:build"
+      - "thesis:build"
     command: "Start-Process -FilePath build/main.pdf -Wait"
     platform: "system"
     local: true
@@ -50,5 +50,4 @@ tasks:
       cache: false
       interactive: true
       outputStyle: "stream"
-      windowsShell: 'pwsh'
-
+      windowsShell: "pwsh"

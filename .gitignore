@@ -1,3 +1,6 @@
+.direnv
+.moon/cache
+.moon/docker
 **/*.aux
 **/*.bbl
 **/*.blg
@@ -21,4 +24,3 @@
 !**/assets/*.pdf
 **/*.synctex.gz
 **/*.synctex(busy)**
-**/.direnv
