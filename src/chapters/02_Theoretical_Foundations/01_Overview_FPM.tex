@@ -27,32 +27,22 @@ involves describing the desired state of the system, with the package manager ha
 the necessary adjustments to achieve that state \cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
 
 A core aspect of functional package management is dependency closure, which
-ensures that all dependencies required for a package are completely defined and isolated
-from the global system. This prevents dependency conflicts and ensures that different
-versions of a package can coexist \cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}.
-Functional package management systems like Nix also guarantee strict reproducibility by
-hashing all inputs, including dependencies and system configurations, used in the build
-process. This ensures that package builds remain identical over time
-\cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+ensures that all dependencies required for a package are completely defined and
+isolated from the global system. This technique prevents dependency conflicts and
+allows different versions of a package or its dependencies to coexist without
+issues. It helps avoid "dependency hell" and ensures that packages are built in
+isolation, so different applications or parts of the system can function independently
+\cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}.
 
-An important concept in functional package management is dependency closure,
-which ensures that different versions of dependencies can coexist without conflicts.
-This technique prevents dependency hell and ensures that packages are built in isolation,
-so different applications or parts of the system can operate independently
-\cite[Chapter 3.3]{dolstraPurelyFunctionalSoftware2006}. By ensuring that packages
-include their full set of dependencies, Nix guarantees that the build process can
-reproduce identical results across different systems and times
-\cite[Section 2.1]{courtesFunctionalPackageManagement2013}.
-
-Functional package management excels in scenarios where long-term stability
-is crucial. Industries like scientific computing or regulated environments benefit
-from its guarantee that any system or environment configuration can be rebuilt,
-even years later, without deviation from the original setup
-\cite[Section 2, Page 5]{rahmanWorksMeCannot2022}. By maintaining immutable
-package versions and using exact versions for every dependency, these systems ensure
-that builds are not subject to drift over time. This stands in contrast to traditional
-systems, where updates to libraries and dependencies can introduce uncertainty into
-future builds \cite[Chapter 5.2]{dolstraPurelyFunctionalSoftware2006}.
+Functional package management systems also guarantee strict reproducibility by
+hashing all inputs, including dependencies and system configurations used in the
+build process. This ensures that package builds remain identical across different
+systems and over time \cite[Section 2.2]{courtesFunctionalPackageManagement2013}.
+By maintaining immutable package versions and using exact versions for every dependency,
+these systems ensure that builds are not subject to drift over time.
+This stands in contrast to traditional systems,
+where updates to libraries and dependencies can introduce uncertainty into
+future builds.
 
 Furthermore, functional package management reduces system pollution. Developers can
 use tools like \texttt{nix develop} or \texttt{nix-shell} to create isolated development
@@ -108,7 +98,8 @@ directly supports the architecture by ensuring system consistency even as packag
 or modified.
 
 A central component of the architecture is the Nix store, a centralized location where all
-package versions and their dependencies are stored. Each package is stored under a unique
+package versions and their dependencies are stored
+\cite{guilloteauPainlessTranspositionReproducible2022}. Each package is stored under a unique
 path based on its hash, ensuring that once a package is built, it cannot be modified, preserving
 its immutability \cite[Chapter 5.2]{dolstraPurelyFunctionalSoftware2006}. This immutability
 guarantees system stability, as packages cannot be altered once installed. Updates or
